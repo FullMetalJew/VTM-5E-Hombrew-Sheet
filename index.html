@@ -9037,6 +9037,7 @@ window._advTip = _advTip; // expose globally for dice roller chips
     }
   }
   window._switchFileLinkForCharacter = _switchFileLinkForCharacter;
+  window._hasActiveFileLink = () => !!_linkedFileHandle;
 
   async function _linkToFile() {
     try {
@@ -9143,7 +9144,15 @@ window._advTip = _advTip; // expose globally for dice roller chips
 
   function markDirty() {
     if (_isPopoutContext) return;
-    showUnsaved();
+    // When this character has a working file link, the file-link status
+    // pill already shows Saving.../Synced/Save-failed for exactly this —
+    // a second, more alarming indicator saying the same thing on a
+    // different timer is just redundant noise, not extra safety. Everyone
+    // without a link (Firefox, unlinked characters, etc.) still gets the
+    // full alarm exactly as before — this only ever suppresses the one
+    // visual, not the underlying autosave/dirty-tracking, which all still
+    // runs unchanged below.
+    if (!_linkedFileHandle) showUnsaved();
     // Immediately (not debounced) flag whichever roster character is
     // currently active as having unsaved changes — the dirty state belongs
     // to the character, not just the on-screen indicator, so it needs to
@@ -15999,7 +16008,8 @@ setTimeout(scheduleDrips, 1000);
     // pending, un-exported edits. Restore the indicator to match THIS
     // character's actual dirty state now that the switch is complete.
     try {
-      if (characters[idx].dirty) { (window.showUnsaved||showUnsaved)(); }
+      const hasLink = (typeof window._hasActiveFileLink === 'function') && window._hasActiveFileLink();
+      if (characters[idx].dirty && !hasLink) { (window.showUnsaved||showUnsaved)(); }
       else { (window.dismissUnsaved||dismissUnsaved)(); try { if (typeof window.markLastSaved === 'function') window.markLastSaved(); } catch(e) {} }
     } catch(e) {}
 
