@@ -8969,11 +8969,36 @@ window._advTip = _advTip; // expose globally for dice roller chips
   // actually open it — so this case needs its own message, not "wrong
   // browser", since the browser itself is fine.
   const FS_ACCESS_INSECURE_CONTEXT = (typeof window.showSaveFilePicker === 'function') && !window.isSecureContext;
+  // Brave is Chromium-based and would otherwise pass the "supported browser"
+  // check, but Brave deliberately strips the File System Access API out
+  // entirely for fingerprinting/privacy reasons — confirmed still true and
+  // still with no user-facing setting to re-enable it. Detected via Brave's
+  // own self-identification object rather than user-agent sniffing, since
+  // that's the reliable way and Brave provides it for exactly this purpose.
+  const FS_ACCESS_IS_BRAVE = !FS_ACCESS_SUPPORTED && !FS_ACCESS_INSECURE_CONTEXT && !!(navigator.brave);
   window.FS_ACCESS_SUPPORTED = FS_ACCESS_SUPPORTED;
   window.FS_ACCESS_INSECURE_CONTEXT = FS_ACCESS_INSECURE_CONTEXT;
+  window.FS_ACCESS_IS_BRAVE = FS_ACCESS_IS_BRAVE;
   let _linkedFileHandle = null;
   let _linkedFileName   = '';
   let _fileWriteBusy    = false;
+  // Per-character file links — the previous version had exactly one global
+  // handle with no idea which character it belonged to, so switching
+  // characters in the roster silently kept writing whoever was on screen
+  // into whichever file was linked last. This map keeps a separate handle
+  // per character (keyed by name, same identity limitation the rest of the
+  // roster already has — duplicate names would collide) so each character
+  // remembers its own file, and switching correctly swaps to it or clears
+  // to "unlinked" if that character was never linked.
+  const _fileLinksByCharacter = new Map();
+  const _STANDALONE_KEY = '\u0000standalone';
+  function _currentCharacterKey() {
+    if (typeof window.getActiveCharacterName === 'function') {
+      const n = window.getActiveCharacterName();
+      if (n) return n;
+    }
+    return _STANDALONE_KEY;
+  }
 
   function _fileLinkEl() { return document.getElementById('dm-file-link-row'); }
 
@@ -8995,6 +9020,24 @@ window._advTip = _advTip; // expose globally for dice roller chips
     }
   }
 
+  // Called whenever the active character changes (roster switch) — swap to
+  // that character's own linked file, or clear to unlinked if it doesn't
+  // have one, so autosaves can never land in the wrong character's file.
+  function _switchFileLinkForCharacter() {
+    const key = _currentCharacterKey();
+    const entry = _fileLinksByCharacter.get(key);
+    if (entry) {
+      _linkedFileHandle = entry.handle;
+      _linkedFileName   = entry.fileName;
+      _setFileLinkStatus('synced');
+    } else {
+      _linkedFileHandle = null;
+      _linkedFileName   = '';
+      _setFileLinkStatus('unlinked');
+    }
+  }
+  window._switchFileLinkForCharacter = _switchFileLinkForCharacter;
+
   async function _linkToFile() {
     try {
       const suggested = ((document.getElementById('charName')?.value || 'character')
@@ -9003,12 +9046,14 @@ window._advTip = _advTip; // expose globally for dice roller chips
         suggestedName: suggested,
         types: [{ description: 'VTM5e Character', accept: { 'application/json': ['.json'] } }],
       });
+      const key = _currentCharacterKey();
       _linkedFileHandle = handle;
       _linkedFileName   = handle.name;
+      _fileLinksByCharacter.set(key, { handle, fileName: handle.name });
       // Write immediately so the file reflects the current sheet the moment
       // it's linked, rather than waiting for the next edit.
       await _writeLinkedFile();
-      showToast('Linked to ' + _linkedFileName + ' — autosaves will write here from now on ✦');
+      showToast('Linked to ' + _linkedFileName + ' — autosaves for this character will write here from now on ✦');
     } catch(e) {
       // AbortError just means the user closed the picker — not a real error.
       if (e && e.name !== 'AbortError') {
@@ -9032,6 +9077,12 @@ window._advTip = _advTip; // expose globally for dice roller chips
       await writable.close();
       _setFileLinkStatus('synced');
       try { _markSaved(); } catch(e) {}
+      // A successful write to the linked file *is* the thing the "Unsaved
+      // Changes" alarm exists to guard against — it can safely clear now,
+      // same as an actual export would, rather than continuing to nag
+      // about something that's genuinely already saved to a real file.
+      try { (window.dismissUnsaved||dismissUnsaved)(); } catch(e) {}
+      try { if (typeof window.clearActiveRosterDirty === 'function') window.clearActiveRosterDirty(); } catch(e) {}
     } catch(e) {
       console.warn('Linked-file write failed', e);
       _setFileLinkStatus('error');
@@ -9051,8 +9102,10 @@ window._advTip = _advTip; // expose globally for dice roller chips
         supportedText = 'Your browser supports this — click to pick or create a file on your computer.';
       } else if (FS_ACCESS_INSECURE_CONTEXT) {
         supportedText = 'Your browser supports this feature, but Chrome only allows it in a "secure context" — https://, or http://localhost specifically. That rules out opening the file directly (a "file://" address) and also a plain http:// address on your own network, even if it\u2019s a server you control. If you\u2019d like to use it, try https:// or localhost. Everything else in the sheet still works normally either way, including manual Export/Import.';
+      } else if (FS_ACCESS_IS_BRAVE) {
+        supportedText = 'Brave deliberately strips this feature out for privacy reasons, even though Brave is Chromium-based and most other Chromium browsers support it. This isn\u2019t a bug here \u2014 Brave currently has no setting to turn it back on. Chrome or Edge would work if you want to use it. Everything else in the sheet still works normally either way, including manual Export/Import.';
       } else {
-        supportedText = 'Your current browser doesn\u2019t support this — it relies on the File System Access API, which only Chromium-based browsers (Chrome, Edge, Brave, Opera, etc.) implement. Firefox and Safari can\u2019t offer it. Everything else in the sheet still works normally either way, including manual Export/Import.';
+        supportedText = 'Your current browser doesn\u2019t support this — it relies on the File System Access API, which only some Chromium-based browsers (Chrome, Edge, Opera, etc.) implement — notably not Brave, which strips it out on purpose. Firefox and Safari can\u2019t offer it either. Everything else in the sheet still works normally either way, including manual Export/Import.';
       }
       el.innerHTML =
         '<div class="dt-disc-header"><span class="dt-disc">Link to File</span></div>' +
@@ -15378,8 +15431,11 @@ setTimeout(scheduleDrips, 1000);
       } else if (window.FS_ACCESS_INSECURE_CONTEXT) {
         const msg = 'Link to File needs this page served over https:// or from http://localhost — a plain http:// address (even on your own network) doesn\u2019t count as secure to the browser, and it won\u2019t work when opened directly as a file either. Export/Import still work fine here.';
         try { showToast(msg); } catch(e) { alert(msg); }
+      } else if (window.FS_ACCESS_IS_BRAVE) {
+        const msg = 'Brave blocks this feature on purpose, with no setting to turn it back on \u2014 it\u2019s not a bug here. Chrome or Edge would work instead. Export/Import still work fine in Brave.';
+        try { showToast(msg); } catch(e) { alert(msg); }
       } else {
-        const msg = 'Link to File needs a Chromium-based browser (Chrome, Edge, Brave...) — use Export/Import here instead.';
+        const msg = 'Link to File needs a Chromium browser that keeps this feature, like Chrome or Edge (not Brave, which blocks it) — use Export/Import here instead.';
         try { showToast(msg); } catch(e) { alert(msg); }
       }
     });
@@ -15402,6 +15458,14 @@ setTimeout(scheduleDrips, 1000);
   let activeIdx  = -1;
   let panelOpen  = false;
   let panelLocked = localStorage.getItem('vtm_dm_locked') === 'true';
+
+  // Lets other modules (currently: per-character file linking) identify
+  // which character is active without needing their own copy of the
+  // roster state. Returns null when no roster character is active (plain
+  // single-sheet mode), which callers treat as a single shared identity.
+  window.getActiveCharacterName = function() {
+    return (activeIdx >= 0 && characters[activeIdx]) ? characters[activeIdx].name : null;
+  };
 
   // ── Persist / restore ───────────────────────────
   function saveRoster() {
@@ -15908,6 +15972,12 @@ setTimeout(scheduleDrips, 1000);
     activeIdx = idx; saveRoster(); renderRoster();
     VTM_AUDIO.rosterSelect();
     const state = characters[idx].data;
+
+    // Swap the file link (if any) to match this character — critical: without
+    // this, autosaves would keep writing into whichever file was linked to
+    // the *previous* character, silently overwriting their file with this
+    // one's data.
+    try { if (typeof window._switchFileLinkForCharacter === 'function') window._switchFileLinkForCharacter(); } catch(e) {}
 
     try { (window.resetSheet||resetSheet)(true); } catch(e) { console.error('resetSheet error:', e); }
     try { applyState(state); } catch(e) {
