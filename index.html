@@ -4407,11 +4407,11 @@ window.addEventListener('DOMContentLoaded', () => {
 <!-- LAST SAVED — small, permanent, low-key reassurance. Not an alarm, just
      a quiet answer to "is this actually saving?" -->
 <div id="last-saved-indicator" style="
-  position:fixed;bottom:6px;left:8px;z-index:9050;
-  font-family:'EB Garamond',serif;font-size:10px;font-style:italic;
-  color:var(--text-muted);opacity:0.5;pointer-events:none;
+  position:fixed;bottom:8px;right:12px;z-index:9050;
+  font-family:'EB Garamond',serif;font-size:13px;font-style:italic;
+  color:var(--text-secondary);opacity:0.75;pointer-events:none;
   letter-spacing:0.02em;white-space:nowrap;
-  text-shadow:0 1px 2px rgba(0,0,0,0.6);
+  text-shadow:0 1px 3px rgba(0,0,0,0.75);
 ">Saved just now</div>
 
 <!-- CROSS-TAB CONFLICT WARNING — hidden until a genuine foreign change to
@@ -8961,8 +8961,16 @@ window._advTip = _advTip; // expose globally for dice roller chips
   // the feature exists and understand why it's unavailable to them, rather
   // than it silently not existing. Only the *behavior* is gated — clicking
   // it on an unsupported browser explains itself instead of doing nothing.
-  const FS_ACCESS_SUPPORTED = (typeof window.showSaveFilePicker === 'function');
+  const FS_ACCESS_SUPPORTED = (typeof window.showSaveFilePicker === 'function') && window.isSecureContext;
+  // The API can exist as a function even where it can't actually be used —
+  // Chrome only allows it in a "secure context" (https:// or localhost),
+  // and a downloaded file opened directly (file://) doesn't qualify. Since
+  // this is a single downloadable HTML file, that's how most people will
+  // actually open it — so this case needs its own message, not "wrong
+  // browser", since the browser itself is fine.
+  const FS_ACCESS_INSECURE_CONTEXT = (typeof window.showSaveFilePicker === 'function') && !window.isSecureContext;
   window.FS_ACCESS_SUPPORTED = FS_ACCESS_SUPPORTED;
+  window.FS_ACCESS_INSECURE_CONTEXT = FS_ACCESS_INSECURE_CONTEXT;
   let _linkedFileHandle = null;
   let _linkedFileName   = '';
   let _fileWriteBusy    = false;
@@ -9003,7 +9011,13 @@ window._advTip = _advTip; // expose globally for dice roller chips
       showToast('Linked to ' + _linkedFileName + ' — autosaves will write here from now on ✦');
     } catch(e) {
       // AbortError just means the user closed the picker — not a real error.
-      if (e && e.name !== 'AbortError') { console.warn('File link error', e); }
+      if (e && e.name !== 'AbortError') {
+        console.warn('File link error', e);
+        const msg = (e && e.name === 'SecurityError')
+          ? 'Link to File needs this page served over https:// or from http://localhost — a plain http:// address (even on your own network) doesn\u2019t count as secure to the browser, and it won\u2019t work when opened directly as a file either.'
+          : 'Link to File failed to open the file picker: ' + (e && e.message ? e.message : 'unknown error');
+        try { showToast(msg, true); } catch(_) { alert(msg); }
+      }
     }
   }
 
@@ -9032,9 +9046,14 @@ window._advTip = _advTip; // expose globally for dice roller chips
     document.body.appendChild(el);
 
     function show(x, y) {
-      const supportedText = FS_ACCESS_SUPPORTED
-        ? 'Your browser supports this — click to pick or create a file on your computer.'
-        : 'Your current browser doesn\u2019t support this — it relies on the File System Access API, which only Chromium-based browsers (Chrome, Edge, Brave, Opera, etc.) implement. Firefox and Safari can\u2019t offer it. Everything else in the sheet still works normally either way, including manual Export/Import.';
+      let supportedText;
+      if (FS_ACCESS_SUPPORTED) {
+        supportedText = 'Your browser supports this — click to pick or create a file on your computer.';
+      } else if (FS_ACCESS_INSECURE_CONTEXT) {
+        supportedText = 'Your browser supports this feature, but Chrome only allows it in a "secure context" — https://, or http://localhost specifically. That rules out opening the file directly (a "file://" address) and also a plain http:// address on your own network, even if it\u2019s a server you control. If you\u2019d like to use it, try https:// or localhost. Everything else in the sheet still works normally either way, including manual Export/Import.';
+      } else {
+        supportedText = 'Your current browser doesn\u2019t support this — it relies on the File System Access API, which only Chromium-based browsers (Chrome, Edge, Brave, Opera, etc.) implement. Firefox and Safari can\u2019t offer it. Everything else in the sheet still works normally either way, including manual Export/Import.';
+      }
       el.innerHTML =
         '<div class="dt-disc-header"><span class="dt-disc">Link to File</span></div>' +
         '<div class="dt-desc">Once linked, every autosave writes straight into that file on your disk instead of just browser storage — no re-downloading a new copy each time, and no risk of losing work if you forget to export. ' + supportedText + '</div>';
@@ -10041,6 +10060,7 @@ window._advTip = _advTip; // expose globally for dice roller chips
   .log-pill.failure { background: rgba(196,30,58,0.22);  color: #e05070; border: 1px solid rgba(196,30,58,0.65); }
   .log-pill.bestial { background: rgba(255,40,40,0.22);  color: #ff6666; border: 1px solid rgba(255,40,40,0.65); }
   .log-pill.messy   { background: rgba(255,100,30,0.22); color: #ff9050; border: 1px solid rgba(255,100,30,0.65); }
+  .log-pill.critical{ background: rgba(201,168,90,0.22); color: #e8cf8a; border: 1px solid rgba(201,168,90,0.7); }
   .log-pill.passed  { background: rgba(74,154,74,0.22);  color: #7dcc7d; border: 1px solid rgba(74,154,74,0.65); }
   .log-pill.wp      { background: rgba(100,80,200,0.25); color: #c0b0ff; border: 1px solid rgba(120,90,220,0.7); }
   .log-mod-chip.wp  { background: rgba(80,60,160,0.3);   color: #c0b0ff; border: 1px solid rgba(120,90,200,0.7); }
@@ -10553,6 +10573,7 @@ window._advTip = _advTip; // expose globally for dice roller chips
   #dice-stage-outcome .stage-outcome-text.failure { color: var(--crimson); }
   #dice-stage-outcome .stage-outcome-text.bestial  { color: #ff4040; text-shadow: 0 0 10px rgba(255,40,40,0.6); }
   #dice-stage-outcome .stage-outcome-text.messy    { color: #ffaa44; text-shadow: 0 0 8px rgba(255,150,40,0.4); }
+  #dice-stage-outcome .stage-outcome-text.critical { color: var(--text-gold); text-shadow: 0 0 10px rgba(201,168,90,0.6); }
   #dice-stage-outcome .stage-successes  { font-size: 9px; color: var(--text-muted); display: block; }
 
   /* Stage parchment overrides */
@@ -10560,6 +10581,7 @@ window._advTip = _advTip; // expose globally for dice roller chips
   body.parchment #dice-stage-outcome .stage-outcome-text.failure { color: #8b1a2a; text-shadow: none; }
   body.parchment #dice-stage-outcome .stage-outcome-text.bestial { color: #7a0000; text-shadow: none; }
   body.parchment #dice-stage-outcome .stage-outcome-text.messy   { color: #8b3000; text-shadow: none; }
+  body.parchment #dice-stage-outcome .stage-outcome-text.critical { color: #7a5a10; text-shadow: none; }
   body.parchment #dice-stage-outcome .stage-successes            { color: #6a4a20; }
 
   /* ══════════════════════════════════════════════
@@ -10608,7 +10630,7 @@ window._advTip = _advTip; // expose globally for dice roller chips
     width: 6px; height: 6px; border-radius: 50%; background: var(--text-muted); flex-shrink: 0;
   }
   #dm-file-link-row #file-link-text { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  #dm-file-link-row.unsupported { opacity: 0.45; cursor: not-allowed; }
+  #dm-file-link-row.unsupported { opacity: 0.45; }
   #dm-file-link-row.unsupported:hover { border-color: rgba(139,0,0,0.25); color: var(--text-muted); }
   #dm-file-link-row.linked { color: #6aba6a; border-color: rgba(106,186,106,0.35); }
   #dm-file-link-row.linked:hover { color: #8afa8a; border-color: rgba(106,186,106,0.6); }
@@ -13192,28 +13214,31 @@ setTimeout(scheduleDrips, 1000);
   const DICE_INFO_SECTIONS = [
     {
       title: 'The Basics',
-      body: `Roll a pool of d10s. Each die showing <strong>6 or higher</strong> is one success.
-        The Storyteller sets a <strong>Difficulty</strong> — the number of successes you need.
-        Meet or beat it and the roll succeeds; fall short and it fails.`,
+      body: `Roll a pool of dice. Each die that lands on an <strong>Ankh</strong> is one success — a blank
+        face means nothing happened. The Storyteller sets a <strong>Difficulty</strong> — the number of
+        Ankhs you need. Meet or beat it and the roll succeeds; fall short and it fails.`,
     },
     {
       title: 'Critical Success',
-      body: `Any two dice that both show <strong>10</strong> form a pair. Each pair is worth
-        <strong>4 successes</strong> instead of 2 — the paired dice's own successes, doubled.
-        A pool with four 10s, for example, nets two pairs: 8 successes from those four dice alone.`,
+      body: `An <strong>Ankh with two stars</strong> is a critical die. On its own it's still just one
+        success — the bonus only kicks in when <strong>two or more</strong> starred dice land together
+        in the same roll. Each matched pair of them is worth <strong>4 successes</strong> instead of 2.
+        Four starred dice, for example, form two pairs: 8 successes from those four dice alone. A single
+        starred die with no partner is just a normal success.`,
     },
     {
       title: 'Hunger Dice',
-      body: `A number of dice equal to your current <strong>Hunger</strong> are swapped for red
-        Hunger dice before you roll — the rest of the pool is unchanged. Hunger dice succeed and
-        pair for criticals exactly like normal dice. They just carry two extra risks, below.`,
+      body: `A number of dice equal to your current <strong>Hunger</strong> roll as red Hunger dice
+        instead of black ones — the rest of the pool is unchanged. The symbols mean exactly the same
+        thing on a red die: Ankh succeeds, and a red Ankh-with-stars still pairs for criticals. They just
+        carry two extra risks, below.`,
     },
     {
       title: 'Messy Critical',
       body: `<p style="margin-bottom:8px;">A Messy Critical happens when <strong>all</strong> of the following are true:</p>
         <ol style="margin:0 0 0 20px;padding:0;">
-          <li style="margin-bottom:6px;">You score a critical — you roll at least one pair of 10s, and that pair counts as 4 successes instead of 2.</li>
-          <li style="margin-bottom:6px;">At least one of those paired 10s is on a <strong>Hunger die</strong> — either Hunger 10 + Hunger 10, or Hunger 10 + a regular 10.</li>
+          <li style="margin-bottom:6px;">You score a critical — at least one matched pair of Ankh-with-stars dice, worth 4 successes instead of 2.</li>
+          <li style="margin-bottom:6px;">At least one die in that pair is a <strong>red Hunger die</strong> — either two red stars, or one red and one black.</li>
           <li>The roll <strong>succeeds</strong> — if the roll doesn't meet the required Difficulty, it can't be a Messy Critical.</li>
         </ol>
         <p style="margin-top:8px;opacity:0.85;">You get what you wanted — but the Beast leaves its mark on how you got it.</p>`,
@@ -13223,20 +13248,20 @@ setTimeout(scheduleDrips, 1000);
       body: `<p style="margin-bottom:8px;">A Bestial Failure only happens if <strong>both</strong> of these are true:</p>
         <ol style="margin:0 0 0 20px;padding:0;">
           <li style="margin-bottom:6px;">You <strong>fail</strong> the roll — you don't meet the Difficulty, or you lose an opposed test.</li>
-          <li>At least one Hunger die shows a <strong>1</strong>.</li>
+          <li>At least one Hunger die shows the <strong>Skull</strong>.</li>
         </ol>
-        <p style="margin-top:8px;opacity:0.85;">If you succeed on the roll, a 1 on a Hunger die means nothing — it's only a threat on a roll that was already going to fail.</p>`,
+        <p style="margin-top:8px;opacity:0.85;">If you succeed on the roll, a Skull on a Hunger die means nothing — it's only a threat on a roll that was already going to fail.</p>`,
     },
     {
       title: 'Willpower Reroll',
       body: `Spend 1 Willpower (marked as superficial damage) to reroll up to <strong>3</strong> of your
-        <em>failed, non-Hunger</em> dice — once per roll. Hunger dice can never be selected for a
+        <em>blank, non-Hunger</em> dice — once per roll. Hunger dice can never be selected for a
         Willpower reroll, win or lose.`,
     },
     {
       title: 'Rouse Check',
-      body: `A single d10, no Hunger dice involved. <strong>6–10</strong> succeeds with no cost.
-        <strong>1–5</strong> fails and your Hunger increases by 1.`,
+      body: `A single die, no Hunger dice involved. An <strong>Ankh</strong> succeeds with no cost — a
+        <strong>blank</strong> face fails and your Hunger increases by 1.`,
     },
   ];
 
@@ -13411,6 +13436,8 @@ setTimeout(scheduleDrips, 1000);
       outcomeClass = 'failure';
     } else if (hasMessy) {
       outcome = `${successes} Success${successes > 1 ? 'es' : ''} — Messy Critical`; outcomeClass = 'messy';
+    } else if (critPairs > 0) {
+      outcome = `${successes} Success${successes > 1 ? 'es' : ''} — Critical Success`; outcomeClass = 'critical';
     } else {
       outcome = `${successes} Success${successes>1?'es':''} — Test Passed`;
       outcomeClass = 'success';
@@ -13524,19 +13551,19 @@ setTimeout(scheduleDrips, 1000);
   // ── Shared die tile factory — used by all onEach handlers ───────────
   const _dieClsInfo = {
     'crit-success':   { symbol: 'Ankh + Stars', label: 'Critical Success',
-      hint: 'A 10. Every pair of 10s in the pool adds 2 bonus successes on top of their own value — so two 10s together are worth 4 successes total.' },
+      hint: 'The Ankh with two stars. On its own it\u2019s just one success, same as a plain Ankh — the bonus only applies when two or more starred dice land together in the same roll. Every matched pair like that is worth 4 successes total instead of 2.' },
     'messy-critical': { symbol: 'Ankh + Stars (on red)', label: 'Messy Critical',
-      hint: 'A 10 rolled on a Hunger die. It still pairs with other 10s for bonus successes as normal, but if the roll succeeds via a critical involving this die, the win comes at a cost — the Beast taints how the action plays out.' },
+      hint: 'The Ankh-with-stars symbol on a red Hunger die. It pairs with other starred dice for bonus successes exactly like a black one, but if the roll succeeds via a critical involving this die, the win comes at a cost — the Beast taints how the action plays out.' },
     'normal-success': { symbol: 'Ankh', label: 'Success',
-      hint: 'Rolled 6–9. Counts as one success toward the difficulty.' },
+      hint: 'A plain Ankh. Counts as one success toward the difficulty.' },
     'hunger-success': { symbol: 'Ankh (on red)', label: 'Success',
-      hint: 'Rolled 6–9 on a Hunger die. Counts as one success just like a normal die — but Hunger dice can never be chosen for a Willpower reroll.' },
+      hint: 'A plain Ankh on a red Hunger die. Counts as one success just like a black die — but Hunger dice can never be chosen for a Willpower reroll.' },
     'normal-fail':    { symbol: 'Blank', label: 'Failure',
-      hint: 'Rolled 1–5. No success. Eligible to be selected for a Willpower reroll (up to 3 dice per roll).' },
+      hint: 'A blank face. No success. Eligible to be selected for a Willpower reroll (up to 3 dice per roll).' },
     'hunger-fail':    { symbol: 'Blank (on red)', label: 'Failure',
-      hint: 'Rolled 2–5 on a Hunger die. No success, and locked — Hunger dice are never eligible for a Willpower reroll.' },
+      hint: 'A blank face on a red Hunger die. No success, and locked — Hunger dice are never eligible for a Willpower reroll.' },
     'bestial-failure':{ symbol: 'Skull', label: 'Bestial Failure',
-      hint: 'A 1 rolled on a Hunger die. Only matters if the roll fails to meet the Difficulty — it doesn\u2019t require zero successes, just a failed roll. When that happens, the Beast asserts itself and the Storyteller narrates the fallout. On a roll that still succeeds, this die does nothing.' },
+      hint: 'A Skull, only possible on a red Hunger die. Only matters if the roll fails to meet the Difficulty — it doesn\u2019t require zero successes, just a failed roll. When that happens, the Beast asserts itself and the Storyteller narrates the fallout. On a roll that still succeeds, this die does nothing.' },
   };
 
   // Custom tooltip for die tiles — matches sheet style, richer than native title
@@ -14017,6 +14044,8 @@ setTimeout(scheduleDrips, 1000);
       outcomeClass = 'failure';
     } else if (hasMessy) {
       outcome = `${successes} Success${successes > 1 ? 'es' : ''} — Messy Critical`; outcomeClass = 'messy';
+    } else if (critPairs > 0) {
+      outcome = `${successes} Success${successes > 1 ? 'es' : ''} — Critical Success`; outcomeClass = 'critical';
     } else {
       outcome = `${successes} Success${successes > 1 ? 'es' : ''} — Test Passed`;
       outcomeClass = 'success';
@@ -14054,14 +14083,20 @@ setTimeout(scheduleDrips, 1000);
       bestial: {
         name: 'Bestial Failure',
         cat:  'A failed roll — the Beast stirs',
-        desc: 'The roll fails to meet the Difficulty and at least one Hunger die showed a 1 (Skull). It doesn\u2019t require zero successes, just a failed roll. The vampire fails and the Beast asserts itself. The Storyteller determines the bestial act — it may be violent, humiliating, or both. A Compulsion or frenzy check may follow.',
-        roll: 'Successes < Difficulty + Hunger die = 1',
+        desc: 'The roll fails to meet the Difficulty and at least one Hunger die showed the Skull. It doesn\u2019t require zero successes, just a failed roll. The vampire fails and the Beast asserts itself. The Storyteller determines the bestial act — it may be violent, humiliating, or both. A Compulsion or frenzy check may follow.',
+        roll: 'Successes < Difficulty + Hunger die = Skull',
       },
       messy: {
         name: 'Messy Critical',
         cat:  'Success tainted by the Beast',
-        desc: 'A critical success (paired 10s) where at least one Hunger die contributed a 10. The action succeeds powerfully but the Beast colours the outcome. The vampire may go too far, reveal their nature, or cause collateral damage the player did not intend.',
-        roll: 'Crit pair formed + Hunger die = 10',
+        desc: 'A critical success (a matched pair of Ankh-with-stars dice) where at least one die in that pair is a Hunger die. The action succeeds powerfully but the Beast colours the outcome. The vampire may go too far, reveal their nature, or cause collateral damage the player did not intend.',
+        roll: 'Crit pair formed + Hunger die in the pair',
+      },
+      critical: {
+        name: 'Critical Success',
+        cat:  'A clean critical — no Beast involved',
+        desc: 'A matched pair of Ankh-with-stars dice, worth 4 successes instead of 2, with no Hunger die in that pair — so unlike a Messy Critical, there\u2019s no cost or taint attached. The action succeeds with real flair; the Storyteller can narrate it as unusually effective, elegant, or decisive.',
+        roll: 'Crit pair formed · no Hunger die in the pair',
       },
       passed: {
         name: 'Test Passed',
@@ -14110,7 +14145,7 @@ setTimeout(scheduleDrips, 1000);
 
       const pill = document.createElement('span');
       pill.className = 'log-pill ' + (e.cls || '');
-      const pillText = { success:'Pass', failure:'Fail', bestial:'Bestial', messy:'Messy', passed:'Pass' };
+      const pillText = { success:'Pass', failure:'Fail', bestial:'Bestial', messy:'Messy', critical:'Crit', passed:'Pass' };
       pill.textContent = pillText[e.cls] || e.result;
       try { _wirePillTip(pill, e.cls); } catch(_e) {}
 
@@ -14265,7 +14300,7 @@ setTimeout(scheduleDrips, 1000);
       'vtm-label-hunger': {
         name: 'Hunger',
         cat:  'The Beast\'s grip on your dice',
-        desc: 'Hunger (1–5) replaces that many normal dice with Hunger dice. Results differ on Hunger dice:\n• A 1 on a Hunger die = Bestial Failure if the roll fails\n• A 10 on a Hunger die = Messy Critical even on success\nHigher Hunger = more volatile rolls. Match this to your sheet\'s Hunger track.',
+        desc: 'Hunger (1–5) replaces that many normal dice with Hunger dice. Results differ on Hunger dice:\n• A Skull on a Hunger die = Bestial Failure if the roll fails\n• Ankh-with-stars on a Hunger die = Messy Critical even on success\nHigher Hunger = more volatile rolls. Match this to your sheet\'s Hunger track.',
         roll: 'Range 0–5 · Match your current Hunger pip track'
       },
       'vtm-label-diff': {
@@ -15340,6 +15375,9 @@ setTimeout(scheduleDrips, 1000);
     fileLinkRowEl.addEventListener('click', () => {
       if (window.FS_ACCESS_SUPPORTED) {
         if (typeof window._linkToFile === 'function') window._linkToFile();
+      } else if (window.FS_ACCESS_INSECURE_CONTEXT) {
+        const msg = 'Link to File needs this page served over https:// or from http://localhost — a plain http:// address (even on your own network) doesn\u2019t count as secure to the browser, and it won\u2019t work when opened directly as a file either. Export/Import still work fine here.';
+        try { showToast(msg); } catch(e) { alert(msg); }
       } else {
         const msg = 'Link to File needs a Chromium-based browser (Chrome, Edge, Brave...) — use Export/Import here instead.';
         try { showToast(msg); } catch(e) { alert(msg); }
