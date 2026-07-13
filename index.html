@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>VtM 5e — World of Darkness: Convergence — Character Sheet v82</title>
+<title>VtM 5e — World of Darkness: Convergence — Character Sheet v139</title>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=Cinzel:wght@400;500;600&family=EB+Garamond:ital,wght@0,400;0,500;1,400;1,500&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -2285,13 +2285,18 @@
     background: rgba(139,0,0,0.1); color: var(--crimson);
     border-color: rgba(139,0,0,0.6);
   }
-  #notesMinimise, #notesClose {
+  #notesMinimise, #notesClose, #notesPopout, #notesPopin,
+  #sessionLogMinimise, #sessionLogClose, #sessionLogPopout, #sessionLogPopin {
     font-size: 16px; background: transparent; border: none;
     color: var(--text-muted); cursor: pointer; padding: 0 4px; line-height: 1;
     transition: color 0.15s;
   }
-  #notesMinimise:hover { color: var(--text-gold); }
-  #notesClose:hover { color: var(--crimson); }
+  #notesPopout, #notesPopin, #sessionLogPopout, #sessionLogPopin {
+    font-size: 13px; font-family: 'Cinzel', serif; letter-spacing: 0.06em; white-space: nowrap;
+  }
+  #notesMinimise:hover, #sessionLogMinimise:hover { color: var(--text-gold); }
+  #notesClose:hover, #sessionLogClose:hover { color: var(--crimson); }
+  #notesPopout:hover, #notesPopin:hover, #sessionLogPopout:hover, #sessionLogPopin:hover { color: var(--text-gold); }
 
   #notesBody {
     flex: 1; overflow: hidden; display: flex; flex-direction: column;
@@ -2343,6 +2348,87 @@
     background: linear-gradient(135deg, transparent 50%, rgba(139,0,0,0.4) 50%);
     border-radius: 0 0 4px 0;
   }
+
+  /* ── SESSION LOG FLOATING WINDOW (same chrome pattern as Notes) ── */
+  #sessionLogWindow {
+    display: flex;
+    position: fixed;
+    top: 80px; right: 40px;
+    width: 420px; height: 560px;
+    min-width: 340px; min-height: 320px;
+    z-index: 400;
+    background: rgba(14,10,12,0.88);
+    backdrop-filter: blur(18px);
+    border: 0.5px solid rgba(139,0,0,0.45);
+    border-radius: 4px;
+    box-shadow: 0 24px 64px rgba(0,0,0,0.85), inset 0 0 60px rgba(139,0,0,0.03);
+    flex-direction: column;
+    overflow: hidden;
+    font-family: 'EB Garamond', serif;
+    resize: none;
+    opacity: 0;
+    pointer-events: none;
+    visibility: hidden;
+    transform: scale(0.97) translateY(6px);
+    transition: opacity 0.18s ease, transform 0.18s ease, visibility 0s linear 0.18s;
+  }
+  #sessionLogWindow.open {
+    opacity: 1;
+    pointer-events: all;
+    visibility: visible;
+    transform: scale(1) translateY(0);
+    transition: opacity 0.18s ease, transform 0.18s ease, visibility 0s linear 0s;
+  }
+  #sessionLogPanelHeader {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 9px 14px;
+    background: rgba(139,0,0,0.08);
+    border-bottom: 0.5px solid rgba(139,0,0,0.25);
+    flex-shrink: 0;
+    cursor: grab;
+    user-select: none;
+  }
+  #sessionLogPanelHeader:active { cursor: grabbing; }
+  #sessionLogPanelTitle {
+    font-family: 'Cinzel', serif; font-size: 13px; letter-spacing: 0.15em;
+    text-transform: uppercase; color: var(--crimson);
+    text-shadow: 0 0 10px rgba(196,30,58,0.35);
+    pointer-events: none;
+  }
+  #sessionLogMinimise, #sessionLogClose {
+    font-size: 16px; background: transparent; border: none;
+    color: var(--text-muted); cursor: pointer; padding: 0 4px; line-height: 1;
+    transition: color 0.15s;
+  }
+  #sessionLogMinimise:hover { color: var(--text-gold); }
+  #sessionLogClose:hover { color: var(--crimson); }
+  #sessionLogBody {
+    flex: 1; overflow-y: auto; padding: 14px 16px;
+  }
+  #sessionLogResize {
+    position: absolute; bottom: 0; right: 0;
+    width: 16px; height: 16px;
+    cursor: se-resize;
+    background: linear-gradient(135deg, transparent 50%, rgba(139,0,0,0.4) 50%);
+    border-radius: 0 0 4px 0;
+  }
+  body.parchment #sessionLogWindow {
+    background: rgba(245,237,216,0.92);
+    backdrop-filter: blur(16px);
+    border: 1px solid rgba(139,90,30,0.45);
+    box-shadow: 0 20px 60px rgba(50,30,5,0.6), inset 0 0 60px rgba(180,140,80,0.06);
+    background-image:
+      repeating-linear-gradient(0deg, transparent, transparent 27px, rgba(180,140,80,0.08) 28px),
+      linear-gradient(160deg, rgba(245,237,216,0) 0%, rgba(225,210,175,0.4) 100%);
+  }
+  body.parchment #sessionLogPanelHeader {
+    background: rgba(139,90,30,0.1);
+    border-bottom: 0.5px solid rgba(139,90,30,0.3);
+  }
+  body.parchment #sessionLogPanelTitle { color: #5a3a10; text-shadow: none; }
+  body.parchment #sessionLogMinimise,
+  body.parchment #sessionLogClose { color: #8a6840; }
+  body.parchment #sessionLogClose:hover { color: #8b1a2a; }
 
   /* ── PARCHMENT NOTES ── */
   body.parchment #notesWindow {
@@ -2437,7 +2523,7 @@
     border-color: var(--gold-border);
   }
   #vtm-bar .bar-divider, #vtm-save-island .bar-divider {
-    width: 0.5px; height: 28px;
+    width: 1px; height: 28px;
     background: rgba(139,0,0,0.45);
     flex-shrink: 0;
   }
@@ -4201,17 +4287,12 @@ window.addEventListener('DOMContentLoaded', () => {
 <div id="vtm-bar-wrap">
   <button id="vtm-bar-toggle" title="Hide toolbar">⊟</button>
   <div id="vtm-bar">
-    <div class="theme-toggle-wrap" id="themeToggle">
-      <span class="ttl left" id="ttlGothic">Gothic</span>
-      <div class="tt-track"><div class="tt-thumb"></div></div>
-      <span class="ttl right" id="ttlParchment">Parchment</span>
-    </div>
-    <div class="bar-divider"></div>
     <button id="collapseAllBtn" class="bar-btn" title="Collapse all sections">⊟ Min</button>
     <button id="expandAllBtn"   class="bar-btn" title="Expand all sections">⊞ Max</button>
     <button id="collapseSubBtn" class="bar-btn" title="Collapse sub-sections">⊟ Sub</button>
     <div class="bar-divider"></div>
-    <button id="notesBtn"   class="bar-btn" title="Personal notes">✎ Notes</button>
+    <button id="notesBtn"   class="bar-btn" title="Personal journal">✎ Journal</button>
+    <button id="sessionLogBtn" class="bar-btn" title="Chronicle calendar & session log">📅 Session Log</button>
     <button id="diceBtn"    class="bar-btn" title="Dice roller">⚄ Dice</button>
     <div class="bar-divider"></div>
     <button id="muteBtn" class="bar-btn" title="Toggle sound effects">🔊 SFX</button>
@@ -4224,10 +4305,12 @@ window.addEventListener('DOMContentLoaded', () => {
 <!-- NOTES OVERLAY -->
 <div id="notesWindow">
   <div id="notesPanelHeader">
-    <span id="notesPanelTitle">✦ Personal Notes</span>
+    <span id="notesPanelTitle">✦ Journal</span>
     <div style="display:flex;gap:6px;align-items:center;">
       <button id="notesPreviewBtn" class="notes-tab-btn active">Preview</button>
       <button id="notesEditBtn" class="notes-tab-btn">Edit</button>
+      <button id="notesPopin"  style="display:none;" title="Pop back in to main window">⊙ Pop In</button>
+      <button id="notesPopout" title="Pop out to new window">⧉</button>
       <button id="notesMinimise" title="Minimise to toolbar">⊟</button>
       <button id="notesClose" title="Close">✕</button>
     </div>
@@ -4237,6 +4320,45 @@ window.addEventListener('DOMContentLoaded', () => {
     <div id="notesPreview"></div>
   </div>
   <div id="notesResize"></div>
+</div>
+
+<!-- SESSION LOG FLOATING WINDOW -->
+<div id="sessionLogWindow">
+  <div id="sessionLogPanelHeader">
+    <span id="sessionLogPanelTitle">✦ Session Log</span>
+    <div style="display:flex;gap:6px;align-items:center;">
+      <button id="sessionLogPopin"  style="display:none;" title="Pop back in to main window">⊙ Pop In</button>
+      <button id="sessionLogPopout" title="Pop out to new window">⧉</button>
+      <button id="sessionLogMinimise" title="Minimise to toolbar">⊟</button>
+      <button id="sessionLogClose" title="Close">✕</button>
+    </div>
+  </div>
+  <div id="sessionLogBody">
+    <div id="dm-date-row">
+      <button id="dm-date-prev" title="Previous night">&minus;</button>
+      <div id="dm-date-fields">
+        <input type="date" id="dm-date-input" title="Current in-game date">
+        <input type="text" id="dm-date-label-input" placeholder="Label (optional) — e.g. Samhain" maxlength="60">
+      </div>
+      <button id="dm-date-next" title="Advance one night">+</button>
+    </div>
+    <div id="dm-session-log-header">
+      <span id="dm-session-log-title">Entries</span>
+      <button id="dm-add-session-btn">+ New Entry</button>
+    </div>
+    <div id="dm-session-form" style="display:none;">
+      <input type="date" id="dm-session-date-input">
+      <input type="text" id="dm-session-title-input" placeholder="Session title..." maxlength="80">
+      <textarea id="dm-session-body-input" placeholder="What happened this session..." rows="4"></textarea>
+      <div id="dm-session-form-actions">
+        <button id="dm-session-save-btn">Save Entry</button>
+        <button id="dm-session-cancel-btn">Cancel</button>
+      </div>
+    </div>
+    <div id="dm-session-log-list"></div>
+    <div id="dm-session-log-empty">No session entries yet.</div>
+  </div>
+  <div id="sessionLogResize"></div>
 </div>
 
 <!-- TOAST -->
@@ -7404,19 +7526,19 @@ window._advTip = _advTip; // expose globally for dice roller chips
   addDiscipline();
 
   // ── THEME TOGGLE ──
-  // ── THEME TOGGLE ──
-  const themeToggle  = document.getElementById('themeToggle');
-  const ttlGothic    = document.getElementById('ttlGothic');
-  const ttlParchment = document.getElementById('ttlParchment');
-
+  // themeToggle now lives in the DM panel footer, which is parsed much
+  // later in the document than this script runs — so these can't be
+  // cached here the way they used to be; applyTheme() looks them up live
+  // (and null-safely) each time instead.
   function applyTheme(parchment) {
     document.body.classList.toggle('parchment', parchment);
-    ttlGothic.classList.toggle('lit', !parchment);
-    ttlParchment.classList.toggle('lit', parchment);
+    document.getElementById('ttlGothic')?.classList.toggle('lit', !parchment);
+    document.getElementById('ttlParchment')?.classList.toggle('lit', parchment);
     localStorage.setItem('vtm_theme', parchment ? 'parchment' : 'gothic');
     try { updateClanIcon(clanSelect.value); } catch(e) {}
     try { updateSectIcon(sectSelect.value); } catch(e) {}
   }
+  window.applyTheme = applyTheme;
 
   document.getElementById('collapseAllBtn').addEventListener('click', () => {
     try { VTM_AUDIO.sectionClose(); } catch(e) {}
@@ -7466,7 +7588,9 @@ window._advTip = _advTip; // expose globally for dice roller chips
   });
 
   applyTheme(localStorage.getItem('vtm_theme') === 'parchment');
-  themeToggle.addEventListener('click', () => applyTheme(!document.body.classList.contains('parchment')));
+  // Click listener for #themeToggle is wired in the DM ROSTER PANEL script
+  // block further down, since that's the first point in document order
+  // where the element (now in the DM panel footer) actually exists.
 
   // ── UNIFIED TOOLBAR TOGGLE ──────────────────────────
   const barToggle = document.getElementById('vtm-bar-toggle');
@@ -9445,6 +9569,9 @@ window._advTip = _advTip; // expose globally for dice roller chips
     transition: color 0.15s;
   }
   .win-collapse-btn:hover { color: var(--crimson); }
+  #text-editor-popin, #text-editor-popout, .note-popup-popin, .note-popup-popout {
+    font-size: 12px; font-family: 'Cinzel', serif; letter-spacing: 0.05em; white-space: nowrap;
+  }
 
   /* ── Individual note popup windows ──────────────── */
   .note-popup-window {
@@ -9549,6 +9676,10 @@ window._advTip = _advTip; // expose globally for dice roller chips
   #notesWindow.collapsed #notesBody,
   #notesWindow.collapsed #notesResize { display: none !important; }
 
+  #sessionLogWindow.collapsed { height: auto !important; min-height: 0 !important; }
+  #sessionLogWindow.collapsed #sessionLogBody,
+  #sessionLogWindow.collapsed #sessionLogResize { display: none !important; }
+
   #text-editor-window.collapsed { height: auto !important; min-height: 0 !important; }
   #text-editor-window.collapsed #text-editor-body,
   #text-editor-window.collapsed #text-editor-preview,
@@ -9565,6 +9696,7 @@ window._advTip = _advTip; // expose globally for dice roller chips
 
   /* ── Rolled-up windows fade like the toolbar ── */
   #notesWindow.open.collapsed,
+  #sessionLogWindow.open.collapsed,
   #text-editor-window.open.collapsed,
   #dice-window.open.collapsed,
   .note-popup-window.open.collapsed {
@@ -9572,12 +9704,14 @@ window._advTip = _advTip; // expose globally for dice roller chips
     transition: opacity 0.3s ease;
   }
   #notesWindow.open.collapsed:hover,
+  #sessionLogWindow.open.collapsed:hover,
   #text-editor-window.open.collapsed:hover,
   #dice-window.open.collapsed:hover,
   .note-popup-window.open.collapsed:hover {
     opacity: 1;
     transition: opacity 0.15s ease;
   }
+
 
   /* ── Dice stage ─────────────────────────────────── */
   #dice-stage {
@@ -10436,6 +10570,13 @@ window._advTip = _advTip; // expose globally for dice roller chips
     flex-shrink: 0;
     display: flex; align-items: center; justify-content: space-between;
   }
+  #dm-panel-footer {
+    padding: 10px 12px 12px;
+    border-top: 0.5px solid rgba(139,0,0,0.2);
+    flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+  }
+  body.parchment #dm-panel-footer { border-top-color: rgba(122,21,21,0.2); }
   #dm-panel-title {
     font-family: 'Cinzel', serif; font-size: 11px;
     letter-spacing: 0.2em; text-transform: uppercase;
@@ -10563,6 +10704,72 @@ window._advTip = _advTip; // expose globally for dice roller chips
   }
   .dm-char-entry:hover .dm-char-remove { opacity: 1; }
   .dm-char-remove:hover { color: var(--crimson); }
+
+  /* ── Chronicle Calendar & Session Log (content styling — window chrome is shared with #notesWindow-style rules below) ── */
+  #dm-date-row { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+  #dm-date-row button {
+    background: transparent; border: 0.5px solid rgba(139,0,0,0.35); border-radius: 3px;
+    color: var(--text-muted); font-family: 'Cinzel', serif; font-size: 13px;
+    width: 24px; height: 24px; flex-shrink: 0; cursor: pointer; transition: all 0.15s; line-height: 1;
+  }
+  #dm-date-row button:hover { border-color: var(--crimson); color: var(--crimson); }
+  #dm-date-fields { flex: 1; display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+  #dm-date-input, #dm-date-label-input, #dm-session-date-input, #dm-session-title-input, #dm-session-body-input {
+    background: rgba(255,255,255,0.04); border: 0.5px solid rgba(139,0,0,0.3); border-radius: 3px;
+    color: var(--text-primary); font-family: 'EB Garamond', serif; font-size: 12.5px;
+    padding: 5px 7px; outline: none; width: 100%; box-sizing: border-box;
+  }
+  #dm-date-input:focus, #dm-date-label-input:focus, #dm-session-date-input:focus,
+  #dm-session-title-input:focus, #dm-session-body-input:focus { border-color: var(--crimson); }
+  #dm-session-body-input { resize: vertical; font-family: 'EB Garamond', serif; line-height: 1.5; }
+  #dm-session-log-header {
+    display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;
+  }
+  #dm-session-log-title {
+    font-family: 'Cinzel', serif; font-size: 9px; letter-spacing: 0.14em;
+    text-transform: uppercase; color: var(--text-muted);
+  }
+  #dm-add-session-btn {
+    background: transparent; border: 0.5px solid rgba(139,0,0,0.3); border-radius: 3px;
+    color: var(--text-muted); font-family: 'Cinzel', serif; font-size: 8.5px;
+    letter-spacing: 0.1em; text-transform: uppercase; padding: 3px 7px; cursor: pointer; transition: all 0.15s;
+  }
+  #dm-add-session-btn:hover { border-color: var(--crimson); color: var(--crimson); }
+  #dm-session-form { margin-bottom: 10px; display: flex; flex-direction: column; gap: 6px; }
+  #dm-session-form-actions { display: flex; gap: 6px; }
+  #dm-session-save-btn, #dm-session-cancel-btn {
+    flex: 1; padding: 5px; font-family: 'Cinzel', serif; font-size: 9px; letter-spacing: 0.1em;
+    text-transform: uppercase; border-radius: 3px; cursor: pointer; transition: all 0.15s;
+  }
+  #dm-session-save-btn { background: rgba(139,0,0,0.2); border: 0.5px solid rgba(139,0,0,0.5); color: var(--crimson); }
+  #dm-session-save-btn:hover { background: rgba(139,0,0,0.32); }
+  #dm-session-cancel-btn { background: transparent; border: 0.5px solid var(--border-md); color: var(--text-muted); }
+  #dm-session-cancel-btn:hover { color: var(--text-primary); }
+  #dm-session-log-list { display: flex; flex-direction: column; gap: 6px; }
+  #dm-session-log-empty { font-family: 'EB Garamond', serif; font-size: 12px; font-style: italic; color: var(--text-muted); opacity: 0.6; padding: 4px 0 2px; }
+  #dm-session-log-empty.hidden { display: none; }
+  .dm-session-entry {
+    border: 0.5px solid rgba(139,0,0,0.2); border-radius: 4px; padding: 8px 9px;
+    background: rgba(255,255,255,0.02);
+  }
+  .dm-session-entry-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin-bottom: 3px; }
+  .dm-session-entry-title { font-family: 'Cinzel', serif; font-size: 11.5px; color: var(--text-gold); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .dm-session-entry-date { font-family: 'EB Garamond', serif; font-size: 10.5px; color: var(--text-muted); font-style: italic; flex-shrink: 0; }
+  .dm-session-entry-body { font-family: 'EB Garamond', serif; font-size: 12px; color: var(--text-secondary); line-height: 1.45; white-space: pre-line; }
+  .dm-session-entry-actions { display: flex; gap: 4px; margin-top: 6px; }
+  .dm-session-entry-actions button {
+    background: transparent; border: 0.5px solid rgba(139,0,0,0.25); border-radius: 3px;
+    color: var(--text-muted); font-size: 10px; padding: 2px 6px; cursor: pointer; transition: all 0.15s;
+  }
+  .dm-session-entry-actions button:hover { border-color: var(--crimson); color: var(--crimson); }
+
+  body.parchment #dm-date-input, body.parchment #dm-date-label-input,
+  body.parchment #dm-session-date-input, body.parchment #dm-session-title-input,
+  body.parchment #dm-session-body-input { background: rgba(255,255,255,0.5); color: #2a1808; border-color: rgba(122,21,21,0.25); }
+  body.parchment .dm-session-entry { background: rgba(255,255,255,0.25); border-color: rgba(122,21,21,0.2); }
+  body.parchment .dm-session-entry-title { color: #7a5010; }
+  body.parchment .dm-session-entry-date, body.parchment .dm-session-entry-body { color: #4a3818; }
+
   #dm-drop-zone {
     margin: 0 12px 8px; flex-shrink: 0;
     border: 0.5px dashed rgba(139,0,0,0.35); border-radius: 3px;
@@ -10667,6 +10874,8 @@ window._advTip = _advTip; // expose globally for dice roller chips
     <div style="display:flex;gap:6px;align-items:center;">
       <button id="text-editor-preview-btn" class="notes-tab-btn active">Preview</button>
       <button id="text-editor-edit-btn" class="notes-tab-btn">Edit</button>
+      <button id="text-editor-popin"  class="win-collapse-btn" style="display:none;" title="Pop back in to main window">⊙ Pop In</button>
+      <button id="text-editor-popout" class="win-collapse-btn" title="Pop out to new window">⧉</button>
       <button id="text-editor-collapse" class="win-collapse-btn" title="Collapse">⊟</button>
       <button id="text-editor-close" title="Close">✕</button>
     </div>
@@ -10683,6 +10892,8 @@ window._advTip = _advTip; // expose globally for dice roller chips
     <div style="display:flex;gap:5px;align-items:center;">
       <button class="note-popup-tab active" data-mode="preview">Preview</button>
       <button class="note-popup-tab" data-mode="edit">Edit</button>
+      <button class="win-collapse-btn note-popup-popin" style="display:none;" title="Pop back in to main window">⊙ Pop In</button>
+      <button class="win-collapse-btn note-popup-popout" title="Pop out to new window">⧉</button>
       <button class="win-collapse-btn note-popup-collapse" title="Collapse">⊟</button>
       <button class="note-popup-close" title="Close">✕</button>
     </div>
@@ -10700,6 +10911,8 @@ window._advTip = _advTip; // expose globally for dice roller chips
     <div style="display:flex;gap:5px;align-items:center;">
       <button class="note-popup-tab active" data-mode="preview">Preview</button>
       <button class="note-popup-tab" data-mode="edit">Edit</button>
+      <button class="win-collapse-btn note-popup-popin" style="display:none;" title="Pop back in to main window">⊙ Pop In</button>
+      <button class="win-collapse-btn note-popup-popout" title="Pop out to new window">⧉</button>
       <button class="win-collapse-btn note-popup-collapse" title="Collapse">⊟</button>
       <button class="note-popup-close" title="Close">✕</button>
     </div>
@@ -10717,6 +10930,8 @@ window._advTip = _advTip; // expose globally for dice roller chips
     <div style="display:flex;gap:5px;align-items:center;">
       <button class="note-popup-tab active" data-mode="preview">Preview</button>
       <button class="note-popup-tab" data-mode="edit">Edit</button>
+      <button class="win-collapse-btn note-popup-popin" style="display:none;" title="Pop back in to main window">⊙ Pop In</button>
+      <button class="win-collapse-btn note-popup-popout" title="Pop out to new window">⧉</button>
       <button class="win-collapse-btn note-popup-collapse" title="Collapse">⊟</button>
       <button class="note-popup-close" title="Close">✕</button>
     </div>
@@ -12661,10 +12876,55 @@ setTimeout(scheduleDrips, 1000);
     }
   });
 
+  // Exposed for the generic pop-out system (see POP-OUT WINDOW SYSTEM
+  // below) — this window's content isn't self-contained like Journal or
+  // the Session Log; it's a live editor for whatever field opened it, so
+  // popping it back in needs to know both which field that is and that a
+  // real 'input' event should fire on it (autosave etc. depend on that).
+  window._textEditorGetSourceId = () => sourceId;
+  window._textEditorSyncFromRelay = (content) => {
+    if (!sourceId) return;
+    const source = document.getElementById(sourceId);
+    if (source) { source.value = content; source.dispatchEvent(new Event('input', { bubbles: true })); }
+  };
+
   editBtn.addEventListener('click',    () => setMode('edit'));
   previewBtn.addEventListener('click', () => setMode('preview'));
   closeBtn.addEventListener('click', closeEditor);
   document.addEventListener('keydown', e => { if (e.key === 'Escape' && win.classList.contains('open')) closeEditor(); });
+
+  // Pop-out — see the generic POP-OUT WINDOW SYSTEM further down. This
+  // window needs its current sourceId/label passed along, unlike the
+  // self-contained windows, since a fresh popout page has no idea what
+  // field it's supposed to be editing otherwise.
+  const tePopoutBtn = document.getElementById('text-editor-popout');
+  const tePopinBtn  = document.getElementById('text-editor-popin');
+  if (tePopoutBtn) {
+    tePopoutBtn.addEventListener('click', () => {
+      if (typeof window._vtmOpenPopout !== 'function') return;
+      const opened = window._vtmOpenPopout('text-editor-window', { src: sourceId || '', label: title.textContent.replace(/^✦\s*/, '') });
+      if (!opened) return;
+      tePopoutBtn.style.display = 'none';
+      if (tePopinBtn) tePopinBtn.style.display = '';
+    });
+  }
+  if (typeof window._vtmWatchPopin === 'function') {
+    window._vtmWatchPopin('text-editor-window', () => {
+      if (tePopoutBtn) tePopoutBtn.style.display = '';
+      if (tePopinBtn) tePopinBtn.style.display = 'none';
+    });
+  } else {
+    // Generic pop-out module (defined later in the document) hasn't run
+    // yet — retry once the rest of the page has finished loading.
+    setTimeout(() => {
+      if (typeof window._vtmWatchPopin === 'function') {
+        window._vtmWatchPopin('text-editor-window', () => {
+          if (tePopoutBtn) tePopoutBtn.style.display = '';
+          if (tePopinBtn) tePopinBtn.style.display = 'none';
+        });
+      }
+    }, 0);
+  }
 
   // Collapse
   const teCollapseBtn = document.getElementById('text-editor-collapse');
@@ -12705,7 +12965,7 @@ setTimeout(scheduleDrips, 1000);
     }
 
     // Register all floating windows
-    ['notesWindow', 'text-editor-window', 'dice-window'].forEach(id => {
+    ['notesWindow', 'sessionLogWindow', 'text-editor-window', 'dice-window'].forEach(id => {
       const el = document.getElementById(id);
       if (el) register(el);
     });
@@ -14714,6 +14974,7 @@ setTimeout(scheduleDrips, 1000);
       <button id="dm-add-folder-btn" title="New folder">+ Folder</button>
     </div>
   </div>
+
   <div id="dm-drop-zone">
     <span id="dm-drop-label">Drop JSON here</span>
     <span id="dm-drop-hint">drag a file or click to browse</span>
@@ -14722,7 +14983,249 @@ setTimeout(scheduleDrips, 1000);
   <div id="dm-roster">
     <div id="dm-empty">No characters loaded.<br>Drag &amp; drop JSON files<br>above to add them.</div>
   </div>
+
+  <div id="dm-panel-footer">
+    <div class="theme-toggle-wrap" id="themeToggle">
+      <span class="ttl left" id="ttlGothic">Gothic</span>
+      <div class="tt-track"><div class="tt-thumb"></div></div>
+      <span class="ttl right" id="ttlParchment">Parchment</span>
+    </div>
+  </div>
 </div>
+
+
+<script>
+// ══════════════════════════════════════════════════
+//  CHRONICLE CALENDAR & SESSION LOG
+//  Chronicle-wide (not per-character) — lives alongside the roster.
+// ══════════════════════════════════════════════════
+(function() {
+  const LOG_KEY = 'vtm_chronicle_log';
+
+  const sessionLogWindow = document.getElementById('sessionLogWindow');
+  const panelTitle  = document.getElementById('sessionLogPanelTitle');
+  const dateInput   = document.getElementById('dm-date-input');
+  const labelInput  = document.getElementById('dm-date-label-input');
+  const prevBtn     = document.getElementById('dm-date-prev');
+  const nextBtn     = document.getElementById('dm-date-next');
+  const addBtn      = document.getElementById('dm-add-session-btn');
+  const form        = document.getElementById('dm-session-form');
+  const formDate    = document.getElementById('dm-session-date-input');
+  const formTitle   = document.getElementById('dm-session-title-input');
+  const formBody    = document.getElementById('dm-session-body-input');
+  const saveBtn     = document.getElementById('dm-session-save-btn');
+  const cancelBtn   = document.getElementById('dm-session-cancel-btn');
+  const list        = document.getElementById('dm-session-log-list');
+  const emptyMsg    = document.getElementById('dm-session-log-empty');
+
+  if (!sessionLogWindow) return; // markup not present for some reason — fail quiet, not loud
+
+  function todayISO() {
+    const d = new Date();
+    return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+  }
+
+  let state = { currentDate: todayISO(), dateLabel: '', entries: [] };
+  let editingId = null; // id of the entry currently being edited, or null for "new"
+
+  function load() {
+    try {
+      const raw = localStorage.getItem(LOG_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        state = {
+          currentDate: parsed.currentDate || todayISO(),
+          dateLabel:   parsed.dateLabel   || '',
+          entries:     Array.isArray(parsed.entries) ? parsed.entries : [],
+        };
+      }
+    } catch(e) { console.warn('Chronicle log load error', e); }
+  }
+
+  function save() {
+    try { localStorage.setItem(LOG_KEY, JSON.stringify(state)); } catch(e) { console.warn('Chronicle log save error', e); }
+  }
+
+  function fmtDate(iso) {
+    if (!iso) return '';
+    // Parse as local date, not UTC, so it doesn't drift a day depending on timezone
+    const [y,m,d] = iso.split('-').map(Number);
+    if (!y || !m || !d) return iso;
+    const dt = new Date(y, m-1, d);
+    return dt.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+  }
+
+  function renderDateRow() {
+    dateInput.value = state.currentDate;
+    labelInput.value = state.dateLabel;
+    const label = state.dateLabel ? (fmtDate(state.currentDate) + ' — ' + state.dateLabel) : fmtDate(state.currentDate);
+    if (panelTitle) panelTitle.textContent = '✦ ' + (label || 'Session Log');
+  }
+
+  function escHtml(s) {
+    return (s || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+
+  function renderList() {
+    const entries = [...state.entries].sort((a,b) => (b.date||'').localeCompare(a.date||'') || (b.createdAt||0) - (a.createdAt||0));
+    if (entries.length === 0) {
+      list.innerHTML = '';
+      emptyMsg.classList.remove('hidden');
+      return;
+    }
+    emptyMsg.classList.add('hidden');
+    list.innerHTML = entries.map(e => `
+      <div class="dm-session-entry" data-id="${e.id}">
+        <div class="dm-session-entry-head">
+          <span class="dm-session-entry-title">${escHtml(e.title)}</span>
+          <span class="dm-session-entry-date">${fmtDate(e.date)}</span>
+        </div>
+        <div class="dm-session-entry-body">${escHtml(e.body)}</div>
+        <div class="dm-session-entry-actions">
+          <button data-action="edit" data-id="${e.id}">Edit</button>
+          <button data-action="delete" data-id="${e.id}">Delete</button>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function openForm(entry) {
+    editingId = entry ? entry.id : null;
+    formDate.value  = entry ? entry.date  : state.currentDate;
+    formTitle.value = entry ? entry.title : '';
+    formBody.value  = entry ? entry.body  : '';
+    form.style.display = 'flex';
+    formTitle.focus();
+  }
+  function closeForm() {
+    form.style.display = 'none';
+    editingId = null;
+    formTitle.value = ''; formBody.value = '';
+  }
+
+  // ── Window open/close/minimize (same pattern as the Notes window) ──
+  let sessionLogOpen = false;
+  let slX = Math.max(20, (window.innerWidth  - 420) / 2);
+  let slY = Math.max(20, (window.innerHeight - 560) / 4);
+  sessionLogWindow.style.left = slX + 'px';
+  sessionLogWindow.style.top  = slY + 'px';
+
+  function openSessionLog() {
+    sessionLogWindow.classList.add('open');
+    sessionLogOpen = true;
+    try { if (typeof window._winManagerFocus === 'function') window._winManagerFocus(sessionLogWindow); } catch(e) {}
+  }
+  function closeSessionLog() {
+    sessionLogWindow.classList.remove('open');
+    sessionLogOpen = false;
+  }
+  const sessionLogBtn = document.getElementById('sessionLogBtn');
+  if (sessionLogBtn) sessionLogBtn.addEventListener('click', () => sessionLogOpen ? closeSessionLog() : openSessionLog());
+  document.getElementById('sessionLogClose').addEventListener('click', closeSessionLog);
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && sessionLogOpen) closeSessionLog(); });
+
+  const sessionLogMin = document.getElementById('sessionLogMinimise');
+  sessionLogMin.addEventListener('click', () => {
+    sessionLogWindow.classList.toggle('collapsed');
+    sessionLogMin.textContent = sessionLogWindow.classList.contains('collapsed') ? '⊞' : '⊟';
+    sessionLogMin.title       = sessionLogWindow.classList.contains('collapsed') ? 'Expand' : 'Collapse';
+  });
+  document.getElementById('sessionLogPanelHeader').addEventListener('dblclick', e => {
+    if (e.target.tagName === 'BUTTON') return;
+    sessionLogMin.click();
+  });
+
+  // ── Drag (title bar) ──
+  const sessionLogDragHandle = document.getElementById('sessionLogPanelHeader');
+  let draggingSL = false, dragSLX = 0, dragSLY = 0, dragSLWX = 0, dragSLWY = 0;
+  sessionLogDragHandle.addEventListener('mousedown', e => {
+    if (e.target.tagName === 'BUTTON') return;
+    draggingSL = true;
+    dragSLX = e.clientX; dragSLY = e.clientY;
+    dragSLWX = sessionLogWindow.offsetLeft;
+    dragSLWY = sessionLogWindow.offsetTop;
+    document.body.style.userSelect = 'none';
+  });
+  window.addEventListener('mousemove', e => {
+    if (!draggingSL) return;
+    const dx = e.clientX - dragSLX;
+    const dy = e.clientY - dragSLY;
+    slX = Math.max(0, Math.min(window.innerWidth  - 80, dragSLWX + dx));
+    slY = Math.max(0, Math.min(window.innerHeight - 40, dragSLWY + dy));
+    sessionLogWindow.style.left = slX + 'px';
+    sessionLogWindow.style.top  = slY + 'px';
+  });
+  window.addEventListener('mouseup', () => { draggingSL = false; document.body.style.userSelect = ''; });
+
+  // ── Resize (bottom-right handle) ──
+  const sessionLogResizeHandle = document.getElementById('sessionLogResize');
+  let resizingSL = false, rzSLX = 0, rzSLY = 0, rzSLW = 0, rzSLH = 0;
+  sessionLogResizeHandle.addEventListener('mousedown', e => {
+    e.stopPropagation();
+    resizingSL = true;
+    rzSLX = e.clientX; rzSLY = e.clientY;
+    rzSLW = sessionLogWindow.offsetWidth;
+    rzSLH = sessionLogWindow.offsetHeight;
+    document.body.style.userSelect = 'none';
+  });
+  window.addEventListener('mousemove', e => {
+    if (!resizingSL) return;
+    const w = Math.max(340, rzSLW + (e.clientX - rzSLX));
+    const h = Math.max(320, rzSLH + (e.clientY - rzSLY));
+    sessionLogWindow.style.width  = w + 'px';
+    sessionLogWindow.style.height = h + 'px';
+  });
+  window.addEventListener('mouseup', () => { resizingSL = false; document.body.style.userSelect = ''; });
+
+  prevBtn.addEventListener('click', () => {
+    const [y,m,d] = state.currentDate.split('-').map(Number);
+    const dt = new Date(y, m-1, d); dt.setDate(dt.getDate() - 1);
+    state.currentDate = dt.getFullYear() + '-' + String(dt.getMonth()+1).padStart(2,'0') + '-' + String(dt.getDate()).padStart(2,'0');
+    renderDateRow(); save();
+  });
+  nextBtn.addEventListener('click', () => {
+    const [y,m,d] = state.currentDate.split('-').map(Number);
+    const dt = new Date(y, m-1, d); dt.setDate(dt.getDate() + 1);
+    state.currentDate = dt.getFullYear() + '-' + String(dt.getMonth()+1).padStart(2,'0') + '-' + String(dt.getDate()).padStart(2,'0');
+    renderDateRow(); save();
+  });
+  dateInput.addEventListener('change', () => { state.currentDate = dateInput.value || todayISO(); renderDateRow(); save(); });
+  labelInput.addEventListener('input', () => { state.dateLabel = labelInput.value; renderDateRow(); save(); });
+
+  addBtn.addEventListener('click', () => openForm(null));
+  cancelBtn.addEventListener('click', closeForm);
+  saveBtn.addEventListener('click', () => {
+    const title = formTitle.value.trim();
+    if (!title) { formTitle.focus(); return; }
+    const date = formDate.value || state.currentDate;
+    const body = formBody.value;
+    if (editingId) {
+      const e = state.entries.find(x => x.id === editingId);
+      if (e) { e.title = title; e.date = date; e.body = body; }
+    } else {
+      state.entries.push({ id: 'log_' + Date.now() + '_' + Math.random().toString(36).slice(2,7), title, date, body, createdAt: Date.now() });
+    }
+    save(); renderList(); closeForm();
+  });
+
+  list.addEventListener('click', (e) => {
+    const btn = e.target.closest('button[data-action]');
+    if (!btn) return;
+    const id = btn.dataset.id;
+    if (btn.dataset.action === 'edit') {
+      const entry = state.entries.find(x => x.id === id);
+      if (entry) openForm(entry);
+    } else if (btn.dataset.action === 'delete') {
+      state.entries = state.entries.filter(x => x.id !== id);
+      save(); renderList();
+    }
+  });
+
+  load();
+  renderDateRow();
+  renderList();
+})();
+</script>
 
 
 <script>
@@ -14735,6 +15238,20 @@ setTimeout(scheduleDrips, 1000);
   const roster   = document.getElementById('dm-roster');
   const dropZone = document.getElementById('dm-drop-zone');
   const empty    = document.getElementById('dm-empty');
+
+  // ── Theme toggle — now lives in this panel's footer. applyTheme() itself
+  // is defined earlier in the document (and already ran once at load, via
+  // null-safe lookups), so this just syncs the toggle's visual lit-state
+  // to match whatever theme is currently active, and wires up the click.
+  const themeToggleEl = document.getElementById('themeToggle');
+  if (themeToggleEl) {
+    const isParchNow = document.body.classList.contains('parchment');
+    document.getElementById('ttlGothic')?.classList.toggle('lit', !isParchNow);
+    document.getElementById('ttlParchment')?.classList.toggle('lit', isParchNow);
+    themeToggleEl.addEventListener('click', () => {
+      if (typeof window.applyTheme === 'function') window.applyTheme(!document.body.classList.contains('parchment'));
+    });
+  }
 
   const ROSTER_KEY  = 'vtm_dm_roster';
   const ACTIVE_KEY  = 'vtm_dm_active';
@@ -15539,6 +16056,213 @@ setTimeout(scheduleDrips, 1000);
         win.classList.contains('open') ? closePopup() : openPopup();
       });
     }
+  });
+})();
+</script>
+
+<script>
+// ══════════════════════════════════════════════════
+//  POP-OUT WINDOW SYSTEM — generic, reused by Journal,
+//  Session Log, the Text Editor, and the note popups.
+//  (The dice roller has its own dedicated mechanism below,
+//  since it needs to relay a lot more state — mod chips,
+//  hunger, common test config — than a plain text window does.)
+// ══════════════════════════════════════════════════
+(function() {
+  const CONTENT_KEY_PREFIX = 'vtm_popout_content_';
+  const ACTIVE_KEY_PREFIX  = 'vtm_popout_active_';
+
+  // Hash format: #popout-<windowId>  or  #popout-<windowId>|key=val|key2=val2
+  const m = location.hash.match(/^#popout-([^|]+)(.*)$/);
+  const POPOUT_ID = m ? decodeURIComponent(m[1]) : null;
+  const POPOUT_PARAMS = {};
+  if (m && m[2]) {
+    m[2].replace(/^\|/, '').split('|').filter(Boolean).forEach(pair => {
+      const eq = pair.indexOf('=');
+      if (eq === -1) return;
+      POPOUT_PARAMS[pair.slice(0, eq)] = decodeURIComponent(pair.slice(eq + 1));
+    });
+  }
+
+  if (POPOUT_ID) {
+    // ── This browser tab/window IS the pop-out ──────────────────────
+    document.addEventListener('DOMContentLoaded', () => {
+      document.body.style.cssText = 'margin:0;padding:0;overflow:hidden;background:#0a0508;';
+
+      const keepClasses = [
+        'attr-skill-tooltip','disc-tooltip','adv-row-tooltip',
+        'adv-preset-overlay','disc-pip-picker','adv-row-note-popup',
+      ];
+      function shouldHide(el) {
+        if (el.id === POPOUT_ID) return false;
+        if (el.tagName === 'STYLE' || el.tagName === 'SCRIPT') return false;
+        for (const cls of keepClasses) { if (el.classList?.contains(cls)) return false; }
+        return true;
+      }
+      [...document.body.children].forEach(el => { if (shouldHide(el)) el.style.display = 'none'; });
+
+      const win = document.getElementById(POPOUT_ID);
+      if (!win) return;
+      win.classList.add('open');
+      win.classList.remove('collapsed');
+      win.style.cssText += [
+        ';display:flex !important', 'position:fixed', 'inset:0',
+        'width:100% !important', 'height:100% !important',
+        'min-width:unset !important', 'min-height:unset !important',
+        'border-radius:0 !important', 'border-left:none !important', 'border-right:none !important',
+        'transform:none !important', 'opacity:1 !important',
+        'visibility:visible !important', 'pointer-events:all !important', 'z-index:1 !important',
+      ].join(';');
+
+      // Give the generic text editor its title/target back, since a fresh
+      // popout page has no idea what field opened it otherwise.
+      if (POPOUT_ID === 'text-editor-window' && POPOUT_PARAMS.label) {
+        const t = document.getElementById('text-editor-title');
+        if (t) t.textContent = '✦ ' + POPOUT_PARAMS.label;
+      }
+
+      // Content relay — a fresh popout page has a blank character sheet, so
+      // windows whose content normally comes from a specific sheet field
+      // (note popups, the text editor) can't just read that field the usual
+      // way. Self-contained windows (Journal, Session Log) don't strictly
+      // need this, but it's harmless for them too.
+      const contentKey = CONTENT_KEY_PREFIX + POPOUT_ID;
+      const textarea = win.querySelector('textarea');
+      const savedContent = localStorage.getItem(contentKey);
+      if (textarea && savedContent !== null) {
+        textarea.value = savedContent;
+        textarea.dispatchEvent(new Event('input', { bubbles: true }));
+        // Re-render whichever tab is active (usually Preview) using the
+        // window's own existing tab logic, rather than duplicating a
+        // markdown renderer here.
+        setTimeout(() => {
+          const activeTab = win.querySelector('.notes-tab-btn.active, .note-popup-tab.active');
+          if (activeTab) activeTab.click();
+        }, 0);
+      }
+      if (textarea) {
+        textarea.addEventListener('input', () => {
+          localStorage.setItem(contentKey, textarea.value);
+        });
+      }
+
+      // Swap this window's own pop-out button for a pop-in button — find
+      // them by the shared naming/class convention used across all of them.
+      const popoutBtn = win.querySelector('[id$="Popout"], [id$="-popout"], .note-popup-popout');
+      const popinBtn  = win.querySelector('[id$="Popin"], [id$="-popin"], .note-popup-popin');
+      if (popoutBtn) popoutBtn.style.display = 'none';
+      if (popinBtn)  popinBtn.style.display  = '';
+      if (popinBtn) {
+        popinBtn.addEventListener('click', () => {
+          localStorage.setItem(ACTIVE_KEY_PREFIX + POPOUT_ID, '0');
+          window.close();
+        });
+      }
+      // Also clear the active flag if closed via the native window X,
+      // not just the Pop In button — otherwise the main window's button
+      // would stay stuck in "popped out" state forever.
+      window.addEventListener('beforeunload', () => {
+        localStorage.setItem(ACTIVE_KEY_PREFIX + POPOUT_ID, '0');
+      });
+
+      localStorage.setItem(ACTIVE_KEY_PREFIX + POPOUT_ID, '1');
+    });
+    return; // don't run the "main window" wiring below
+  }
+
+  // ── This is the main window — expose helpers for each window to use ──
+  function openPopoutWindow(windowId, extraParams) {
+    const win = document.getElementById(windowId);
+    const textarea = win ? win.querySelector('textarea') : null;
+    if (textarea) localStorage.setItem(CONTENT_KEY_PREFIX + windowId, textarea.value);
+
+    let hash = '#popout-' + encodeURIComponent(windowId);
+    if (extraParams) {
+      const parts = Object.entries(extraParams)
+        .filter(([,v]) => v !== undefined && v !== null)
+        .map(([k,v]) => k + '=' + encodeURIComponent(v));
+      if (parts.length) hash += '|' + parts.join('|');
+    }
+
+    const w = window.open(
+      location.href.split('#')[0] + hash,
+      '_blank',
+      'width=560,height=560,menubar=no,toolbar=no,location=no,status=no,scrollbars=no,resizable=yes'
+    );
+    if (!w) {
+      try { showToast('⚠ Pop-out blocked — allow popups for this page'); }
+      catch(e) { alert('Pop-out blocked — please allow popups for this page'); }
+      return null;
+    }
+    if (win) win.classList.remove('open');
+    return w;
+  }
+
+  function watchForPopin(windowId, onRestore) {
+    const key = ACTIVE_KEY_PREFIX + windowId;
+    window.addEventListener('storage', e => {
+      if (e.key !== key) return;
+      if (e.newValue === '0' || e.newValue === null) {
+        const textarea = document.getElementById(windowId)?.querySelector('textarea');
+        const relay = localStorage.getItem(CONTENT_KEY_PREFIX + windowId);
+        if (textarea && relay !== null) {
+          textarea.value = relay;
+          textarea.dispatchEvent(new Event('input', { bubbles: true }));
+        }
+        // Text editor is source-linked rather than self-contained — needs
+        // its own sync hook to write back to the right sheet field.
+        if (windowId === 'text-editor-window' && typeof window._textEditorSyncFromRelay === 'function' && relay !== null) {
+          window._textEditorSyncFromRelay(relay);
+        }
+        if (onRestore) onRestore();
+      }
+    });
+  }
+
+  window._vtmOpenPopout = openPopoutWindow;
+  window._vtmWatchPopin = watchForPopin;
+
+  // ── Wire the simple, self-contained windows (Journal, Session Log) —
+  // the text editor wires its own button above (needs sourceId/label at
+  // click-time); note popups are wired in their own existing setup loop.
+  function wireSimplePopout(windowId, popoutBtnId, popinBtnId) {
+    const popoutBtn = document.getElementById(popoutBtnId);
+    const popinBtn  = document.getElementById(popinBtnId);
+    if (popoutBtn) {
+      popoutBtn.addEventListener('click', () => {
+        const opened = openPopoutWindow(windowId);
+        if (!opened) return;
+        popoutBtn.style.display = 'none';
+        if (popinBtn) popinBtn.style.display = '';
+      });
+    }
+    watchForPopin(windowId, () => {
+      if (popoutBtn) popoutBtn.style.display = '';
+      if (popinBtn) popinBtn.style.display = 'none';
+    });
+  }
+  wireSimplePopout('notesWindow', 'notesPopout', 'notesPopin');
+  wireSimplePopout('sessionLogWindow', 'sessionLogPopout', 'sessionLogPopin');
+
+  // ── Note popup windows (Coterie/Domain/Chronicle) — dynamically wire
+  // each instance found on the page, using its own id as the window id.
+  document.querySelectorAll('.note-popup-window').forEach(win => {
+    const popoutBtn = win.querySelector('.note-popup-popout');
+    const popinBtn  = win.querySelector('.note-popup-popin');
+    const windowId  = win.id;
+    if (!windowId) return;
+    if (popoutBtn) {
+      popoutBtn.addEventListener('click', () => {
+        const opened = openPopoutWindow(windowId);
+        if (!opened) return;
+        popoutBtn.style.display = 'none';
+        if (popinBtn) popinBtn.style.display = '';
+      });
+    }
+    watchForPopin(windowId, () => {
+      if (popoutBtn) popoutBtn.style.display = '';
+      if (popinBtn) popinBtn.style.display = 'none';
+    });
   });
 })();
 </script>
