@@ -2216,21 +2216,6 @@
   }
   #vtm-bar .bar-btn.bar-btn-active { color: var(--crimson); border-color: var(--border-red); }
 
-  /* Zoom label inside bar */
-  #vtm-bar .bar-zoom-label, #zoomLabel {
-    font-family: 'Cinzel', serif; font-size: 11px; letter-spacing: 0.12em;
-    color: var(--text-gold); min-width: 34px; text-align: center;
-    text-shadow: 0 0 6px rgba(184,151,74,0.3);
-  }
-
-  /* Foundry dot */
-  #foundry-dot {
-    display: inline-block; width: 7px; height: 7px;
-    border-radius: 50%; background: #444;
-    transition: background 0.3s; flex-shrink: 0;
-    vertical-align: middle; margin-left: 3px;
-  }
-
   /* Parchment theme */
   body.parchment #vtm-bar {
     background: rgba(234,217,180,0.95); border-color: rgba(122,21,21,0.25);
@@ -2241,8 +2226,6 @@
   }
   body.parchment #vtm-bar .bar-btn { color: rgba(80,40,20,0.75); border-color: rgba(122,21,21,0.2); }
   body.parchment #vtm-bar .bar-btn:hover { color: #5a1a1a; border-color: rgba(122,21,21,0.5); background: rgba(122,21,21,0.08); }
-
-  body.parchment #zoomLabel { color: #7a5010 !important; text-shadow: none !important; }
 
   /* ── NOTES FLOATING WINDOW ── */
   #notesWindow {
@@ -2424,7 +2407,7 @@
   body.parchment #vtm-save-island .bar-btn { color: rgba(80,40,20,0.75); border-color: rgba(122,21,21,0.3); }
   body.parchment #vtm-save-island .bar-btn.bar-btn-save { color: var(--blood); border-color: var(--blood); }
   body.parchment #vtm-save-island .bar-divider { background: rgba(122,21,21,0.2); }
-  #vtm-bar .bar-btn, #vtm-save-island .bar-btn, #vtm-zoom-island .bar-btn {
+  #vtm-bar .bar-btn, #vtm-save-island .bar-btn {
     font-family: 'Cinzel', serif;
     font-size: 12px;
     letter-spacing: 0.14em;
@@ -2437,23 +2420,23 @@
     cursor: pointer;
     transition: all 0.2s;
   }
-  #vtm-bar .bar-btn:hover, #vtm-save-island .bar-btn:hover, #vtm-zoom-island .bar-btn:hover {
+  #vtm-bar .bar-btn:hover, #vtm-save-island .bar-btn:hover:hover {
     color: var(--text-gold);
     border-color: var(--gold-border);
   }
-  #vtm-bar .bar-btn.bar-btn-save, #vtm-save-island .bar-btn.bar-btn-save, #vtm-zoom-island .bar-btn.bar-btn-save {
+  #vtm-bar .bar-btn.bar-btn-save, #vtm-save-island .bar-btn.bar-btn-save.bar-btn-save {
     color: var(--crimson);
     border-color: var(--border-red);
   }
-  #vtm-bar .bar-btn.bar-btn-save:hover, #vtm-save-island .bar-btn.bar-btn-save:hover, #vtm-zoom-island .bar-btn.bar-btn-save:hover {
+  #vtm-bar .bar-btn.bar-btn-save:hover, #vtm-save-island .bar-btn.bar-btn-save:hover.bar-btn-save:hover {
     background: var(--blood-dim);
     border-color: var(--crimson);
   }
-  #vtm-bar .bar-btn.bar-btn-active, #vtm-save-island .bar-btn.bar-btn-active, #vtm-zoom-island .bar-btn.bar-btn-active {
+  #vtm-bar .bar-btn.bar-btn-active, #vtm-save-island .bar-btn.bar-btn-active.bar-btn-active {
     color: var(--text-gold);
     border-color: var(--gold-border);
   }
-  #vtm-bar .bar-divider, #vtm-save-island .bar-divider, #vtm-zoom-island .bar-divider {
+  #vtm-bar .bar-divider, #vtm-save-island .bar-divider {
     width: 0.5px; height: 28px;
     background: rgba(139,0,0,0.45);
     flex-shrink: 0;
@@ -4228,13 +4211,8 @@ window.addEventListener('DOMContentLoaded', () => {
     <button id="expandAllBtn"   class="bar-btn" title="Expand all sections">⊞ Max</button>
     <button id="collapseSubBtn" class="bar-btn" title="Collapse sub-sections">⊟ Sub</button>
     <div class="bar-divider"></div>
-    <button id="zoomOutBtn" class="bar-btn" title="Zoom out">−</button>
-    <span id="zoomLabel" class="bar-zoom-label">100%</span>
-    <button id="zoomInBtn" class="bar-btn" title="Zoom in">+</button>
-    <div class="bar-divider"></div>
     <button id="notesBtn"   class="bar-btn" title="Personal notes">✎ Notes</button>
     <button id="diceBtn"    class="bar-btn" title="Dice roller">⚄ Dice</button>
-    <button id="foundryBtn" class="bar-btn" title="Foundry VTT Bridge">⚙ Foundry <span id="foundry-dot"></span></button>
     <div class="bar-divider"></div>
     <button id="muteBtn" class="bar-btn" title="Toggle sound effects">🔊 SFX</button>
     <button id="bgmBtn"  class="bar-btn" title="Toggle background music">🎵 BGM</button>
@@ -4309,17 +4287,48 @@ window.addEventListener('DOMContentLoaded', () => {
      nothing here runs or renders for them. -->
 <div id="file-link-indicator" style="
   display:none;
-  position:fixed;top:96px;right:0;z-index:9099;
+  position:fixed;top:96px;left:0;z-index:9099;
   background:rgba(10,5,8,0.94);backdrop-filter:blur(10px);
   border:0.5px solid rgba(196,30,58,0.35);border-left:none;border-right:none;
-  border-radius:4px 0 0 4px;
-  padding:5px 12px 5px 10px;align-items:center;gap:7px;
+  border-radius:0 4px 4px 0;
+  padding:5px 10px 5px 12px;align-items:center;gap:7px;
   font-family:'Cinzel',serif;font-size:8.5px;letter-spacing:0.1em;
   text-transform:uppercase;cursor:pointer;color:var(--text-muted);
   opacity:0.55;transition:opacity 0.25s;
 ">
   <span id="file-link-dot" style="width:6px;height:6px;border-radius:50%;background:var(--text-muted);flex-shrink:0;display:inline-block;"></span>
   <span id="file-link-text" style="white-space:nowrap;">Link to file</span>
+</div>
+
+<!-- LAST SAVED — small, permanent, low-key reassurance. Not an alarm, just
+     a quiet answer to "is this actually saving?" -->
+<div id="last-saved-indicator" style="
+  position:fixed;bottom:6px;left:8px;z-index:9050;
+  font-family:'EB Garamond',serif;font-size:10px;font-style:italic;
+  color:var(--text-muted);opacity:0.5;pointer-events:none;
+  letter-spacing:0.02em;white-space:nowrap;
+  text-shadow:0 1px 2px rgba(0,0,0,0.6);
+">Saved just now</div>
+
+<!-- CROSS-TAB CONFLICT WARNING — hidden until a genuine foreign change to
+     the active character is detected via the storage event. -->
+<div id="cross-tab-warning" style="
+  display:none;
+  position:fixed;top:0;left:50%;transform:translateX(-50%);z-index:9500;
+  background:rgba(40,10,10,0.97);backdrop-filter:blur(10px);
+  border:0.5px solid rgba(196,30,58,0.7);border-top:none;
+  border-radius:0 0 6px 6px;
+  padding:9px 18px;align-items:center;gap:12px;
+  font-family:'EB Garamond',serif;font-size:12.5px;color:var(--text-primary);
+  box-shadow:0 6px 20px rgba(0,0,0,0.6);
+">
+  <span>&#9888; This character was updated in another tab.</span>
+  <button id="cross-tab-reload-btn" style="font-family:'Cinzel',serif;font-size:9px;
+    letter-spacing:0.1em;text-transform:uppercase;background:rgba(139,0,0,0.3);
+    border:0.5px solid rgba(196,30,58,0.6);border-radius:3px;color:var(--crimson);
+    cursor:pointer;padding:4px 10px;white-space:nowrap;">Reload</button>
+  <button id="cross-tab-dismiss-btn" style="background:none;border:none;
+    color:var(--text-muted);cursor:pointer;font-size:14px;padding:0 4px;line-height:1;">&times;</button>
 </div>
 
 <script>
@@ -7480,32 +7489,6 @@ window._advTip = _advTip; // expose globally for dice roller chips
   });
 
 
-  // ── ZOOM CONTROLS ──────────────────────────────────
-  const ZOOM_STEP = 10;
-  const ZOOM_MIN  = 50;
-  const ZOOM_MAX  = 150;
-  let   zoomLevel = parseInt(localStorage.getItem('vtm_zoom') || '100');
-  const zoomLabel = document.getElementById('zoomLabel');
-
-  function applyZoom(level) {
-    zoomLevel = Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, level));
-    document.body.style.zoom = zoomLevel + '%';
-    // Counter-zoom fixed UI elements so they stay native size
-    const scale = (100 / zoomLevel * 100).toFixed(1) + '%';
-    const wrap  = document.getElementById('vtm-bar-wrap');
-    const panel = document.getElementById('dm-panel');
-    const trig  = document.getElementById('dm-trigger');
-    if (wrap)   wrap.style.zoom   = scale;
-    if (panel)  panel.style.zoom  = scale;
-    if (trig)   trig.style.zoom   = scale;
-    if (zoomLabel) zoomLabel.textContent = zoomLevel + '%';
-    localStorage.setItem('vtm_zoom', zoomLevel);
-  }
-  applyZoom(zoomLevel);
-
-  document.getElementById('zoomInBtn').addEventListener('click',  () => applyZoom(zoomLevel + ZOOM_STEP));
-  document.getElementById('zoomOutBtn').addEventListener('click', () => applyZoom(zoomLevel - ZOOM_STEP));
-
   // ── FIRST LOAD — show bar fully visible, then fade ──
   if (barToggle) {
     barToggle.style.transition = 'none';
@@ -7915,6 +7898,7 @@ window._advTip = _advTip; // expose globally for dice roller chips
   }
   updateBgmBtn();
   const SAVE_KEY = 'vtm5e_v96';
+  window.SAVE_KEY = SAVE_KEY;
   window.SAVE_KEY = SAVE_KEY;
   // Expose live tracker state for popout sync
   Object.defineProperty(window, '_liveHunger',   { get: () => hungerLevel });
@@ -8662,6 +8646,7 @@ window._advTip = _advTip; // expose globally for dice roller chips
       setTimeout(() => URL.revokeObjectURL(url), 1000);
       showToast('Exported ✦');
       dismissUnsaved();
+      try { _markSaved(); } catch(e) {}
       try { if (typeof window.clearActiveRosterDirty === 'function') window.clearActiveRosterDirty(); } catch(e) {}
     } catch(e) { showToast('Export failed: ' + e.message, true); }
   }
@@ -8670,6 +8655,32 @@ window._advTip = _advTip; // expose globally for dice roller chips
   let _unsavedVisible = false, _unsavedEl = null;
   let _unsavedState   = 'hidden'; // hidden | visible | peeking
   let _unsavedTimer   = null;
+
+  // Universal safety net — works identically in every browser, unlike the
+  // file-link feature. This is the one thing that actually catches "closed
+  // the tab with unsaved work" for everyone, Firefox included.
+  window.addEventListener('beforeunload', (e) => {
+    if (!_unsavedVisible) return;
+    e.preventDefault();
+    e.returnValue = ''; // required for the native confirm dialog in most browsers
+    return '';
+  });
+
+  // ── Persistent "last saved" status line (quiet, always visible) ────
+  let _lastSavedAt = Date.now(); // treat "just loaded" as saved — nothing pending yet
+  function _updateLastSavedDisplay() {
+    const el = document.getElementById('last-saved-indicator');
+    if (!el) return;
+    if (_unsavedVisible) { el.textContent = 'Unsaved changes'; return; }
+    const secs = Math.round((Date.now() - _lastSavedAt) / 1000);
+    if (secs < 5)        el.textContent = 'Saved just now';
+    else if (secs < 60)  el.textContent = 'Saved ' + secs + 's ago';
+    else if (secs < 3600) el.textContent = 'Saved ' + Math.round(secs/60) + 'm ago';
+    else el.textContent = 'Saved ' + Math.round(secs/3600) + 'h ago';
+  }
+  function _markSaved() { _lastSavedAt = Date.now(); _updateLastSavedDisplay(); }
+  window.markLastSaved = _markSaved;
+  setInterval(_updateLastSavedDisplay, 5000);
 
   function _getUnsaved() {
     if (!_unsavedEl) {
@@ -8899,6 +8910,7 @@ window._advTip = _advTip; // expose globally for dice roller chips
       await writable.write(JSON.stringify(s, null, 2));
       await writable.close();
       _setFileLinkStatus('synced');
+      try { _markSaved(); } catch(e) {}
     } catch(e) {
       console.warn('Linked-file write failed', e);
       _setFileLinkStatus('error');
@@ -8931,6 +8943,7 @@ window._advTip = _advTip; // expose globally for dice roller chips
       try {
         const s = collectState();
         localStorage.setItem(SAVE_KEY, JSON.stringify({...s, portrait: ''}));
+        _markSaved();
       } catch(e) {}
       // Keep the DM Roster's active character entry current too, so it
       // stops handing back the stale import-time snapshot — see
@@ -13167,14 +13180,6 @@ setTimeout(scheduleDrips, 1000);
             }
           }
         }, 100);
-        try {
-          VTM_BRIDGE.send({
-            character: document.getElementById('charName')?.value || '',
-            label: label || ('Pool ' + pool + ', Hunger ' + hunger + ', Diff ' + diff),
-            pool, hunger, difficulty: diff,
-            successes, outcome, outcomeClass, results,
-          });
-        } catch(e) {}
       },
       // ── onEach: one die just landed — add its tile ──
       (die, dieIndex) => {
@@ -15188,6 +15193,44 @@ setTimeout(scheduleDrips, 1000);
   }
   window.clearActiveRosterDirty = clearActiveCharacterDirty;
 
+  // ── Cross-tab conflict detection ────────────────────────────────
+  // The 'storage' event only ever fires in OTHER tabs/windows of the same
+  // origin — never the tab that made the write — so any event we receive
+  // here is guaranteed to be a genuine change made elsewhere, not an echo
+  // of our own save. We still filter it down to "does this actually touch
+  // the character I have open right now", since the roster is designed to
+  // let different tabs legitimately work on different characters at once —
+  // warning on every roster write anywhere would make that unusable.
+  function _showCrossTabWarning() {
+    const el = document.getElementById('cross-tab-warning');
+    if (el) el.style.display = 'flex';
+  }
+  window.addEventListener('storage', (e) => {
+    if (!e.key) return;
+    try {
+      if (e.key === ROSTER_KEY && activeIdx >= 0 && characters[activeIdx]) {
+        const incoming = JSON.parse(e.newValue || '[]');
+        const mine = characters[activeIdx];
+        const match = incoming.find(c => c.name === mine.name);
+        if (match && JSON.stringify(match.data) !== JSON.stringify(mine.data)) {
+          _showCrossTabWarning();
+        }
+      } else if (e.key === (window.SAVE_KEY || 'vtm5e_v96') && activeIdx < 0) {
+        // Only relevant in plain single-sheet mode (no roster character
+        // active) — in roster mode this key isn't the source of truth.
+        _showCrossTabWarning();
+      }
+    } catch(err) { /* malformed/foreign storage write — ignore */ }
+  });
+  (function wireCrossTabButtons() {
+    const reloadBtn  = document.getElementById('cross-tab-reload-btn');
+    const dismissBtn = document.getElementById('cross-tab-dismiss-btn');
+    if (reloadBtn)  reloadBtn.addEventListener('click', () => location.reload());
+    if (dismissBtn) dismissBtn.addEventListener('click', () => {
+      document.getElementById('cross-tab-warning').style.display = 'none';
+    });
+  })();
+
   function loadCharacter(idx) {
     if (idx < 0 || idx >= characters.length) return;
 
@@ -15233,7 +15276,7 @@ setTimeout(scheduleDrips, 1000);
     // character's actual dirty state now that the switch is complete.
     try {
       if (characters[idx].dirty) { (window.showUnsaved||showUnsaved)(); }
-      else { (window.dismissUnsaved||dismissUnsaved)(); }
+      else { (window.dismissUnsaved||dismissUnsaved)(); try { if (typeof window.markLastSaved === 'function') window.markLastSaved(); } catch(e) {} }
     } catch(e) {}
 
     // Rebuild Common Tests + sync to popout
@@ -15499,172 +15542,6 @@ setTimeout(scheduleDrips, 1000);
   });
 })();
 </script>
-
-<script>
-// ══════════════════════════════════════════════════
-//  VTM FOUNDRY BRIDGE — direct socket.io connection
-//  No relay page needed. Connects straight to Foundry.
-// ══════════════════════════════════════════════════
-const VTM_BRIDGE = (() => {
-  const dot = document.getElementById('foundry-dot');
-  const btn = document.getElementById('foundryBtn');
-  const SETTINGS_KEY = 'vtm_foundry_url';
-
-  let socket   = null;
-  let connected = false;
-  let sioLoaded = false;
-  let foundryUrl = localStorage.getItem(SETTINGS_KEY) || 'http://localhost:30000';
-
-  // ── Status dot ────────────────────────────────────
-  function setDot(state) {
-    if (!dot) return;
-    const colours = { off: '#444', connecting: '#c84', on: '#4c4', error: '#c44' };
-    dot.style.background = colours[state] || '#444';
-    dot.title = {
-      off:        'Foundry: not connected — click to configure',
-      connecting: 'Foundry: connecting…',
-      on:         'Foundry: connected ✦',
-      error:      'Foundry: connection failed — click to retry',
-    }[state] || '';
-  }
-
-  // ── Load socket.io from the running Foundry instance ─────────
-  function loadSio(url, cb) {
-    if (sioLoaded && window.io) { cb(null); return; }
-    const s = document.createElement('script');
-    s.src = url.replace(/\/$/, '') + '/socket.io/socket.io.js';
-    s.onload  = () => { sioLoaded = true; cb(null); };
-    s.onerror = () => cb(new Error('Could not load socket.io from ' + url + '. Is Foundry running?'));
-    document.head.appendChild(s);
-  }
-
-  // ── Connect ───────────────────────────────────────
-  function connect(url) {
-    if (socket) { socket.disconnect(); socket = null; }
-    foundryUrl = url || foundryUrl;
-    localStorage.setItem(SETTINGS_KEY, foundryUrl);
-    setDot('connecting');
-
-    loadSio(foundryUrl, (err) => {
-      if (err) { setDot('error'); showToast('Foundry: ' + err.message, true); return; }
-      try {
-        socket = io(foundryUrl, { transports: ['websocket'], reconnectionAttempts: 3 });
-
-        socket.on('connect', () => {
-          connected = true;
-          setDot('on');
-          showToast('Connected to Foundry ✦');
-        });
-        socket.on('disconnect', () => {
-          connected = false;
-          setDot('off');
-        });
-        socket.on('connect_error', () => {
-          connected = false;
-          setDot('error');
-        });
-      } catch(e) {
-        setDot('error');
-        showToast('Foundry connect error: ' + e.message, true);
-      }
-    });
-  }
-
-  // ── Send a roll to Foundry chat ───────────────────
-  function send(payload) {
-    if (!connected || !socket) return;
-    try {
-      // Foundry module sockets use 'module.{id}' as the event name
-      socket.emit('module.vtm-sheet-bridge', { type: 'vtmRoll', payload });
-    } catch(e) {
-      console.warn('[VtM Bridge] send failed:', e);
-    }
-  }
-
-  // ── Settings panel (inline, no popup needed) ──────
-  function buildPanel() {
-    const existing = document.getElementById('foundry-panel');
-    if (existing) { existing.remove(); return; }
-
-    const isParchment = document.body.classList.contains('parchment');
-    const panel = document.createElement('div');
-    panel.id = 'foundry-panel';
-    panel.style.cssText = `
-      position:fixed; z-index:500;
-      background:${isParchment ? 'rgba(245,237,216,0.97)' : 'rgba(10,5,8,0.97)'}; backdrop-filter:blur(16px);
-      border:1px solid ${isParchment ? 'rgba(139,90,30,0.4)' : 'rgba(139,0,0,0.45)'}; border-radius:6px;
-      padding:16px 18px; width:280px;
-      box-shadow:0 16px 48px rgba(0,0,0,0.8);
-      font-family:'Cinzel',serif;
-      color:${isParchment ? '#3e2810' : 'inherit'};
-    `;
-
-    // Position above the button, right-aligned to it
-    const btnRect = btn ? btn.getBoundingClientRect() : null;
-    const panelH  = 220; // approximate panel height
-    const rightPx = btnRect ? (window.innerWidth - btnRect.right) : 24;
-    const topPx   = btnRect ? Math.max(8, btnRect.top - panelH - 8) : 200;
-    panel.style.right = rightPx + 'px';
-    panel.style.top   = topPx + 'px';
-    panel.innerHTML = `
-      <div style="font-size:10px;letter-spacing:0.16em;text-transform:uppercase;color:var(--crimson);margin-bottom:12px;text-shadow:0 0 8px rgba(196,30,58,0.3);">⚙ Foundry Bridge</div>
-      <div style="font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-muted);margin-bottom:5px;">Foundry URL</div>
-      <input id="foundry-url-input" type="text" value="${foundryUrl}"
-        style="width:100%;background:rgba(255,255,255,0.05);border:0.5px solid rgba(139,0,0,0.4);border-radius:3px;
-        color:var(--text-primary);font-family:'EB Garamond',serif;font-size:13px;padding:6px 8px;outline:none;margin-bottom:10px;">
-      <div style="display:flex;gap:8px;">
-        <button id="foundry-connect-btn" style="flex:1;padding:7px;font-family:'Cinzel',serif;font-size:9px;letter-spacing:0.12em;
-          text-transform:uppercase;background:rgba(139,0,0,0.18);border:0.5px solid rgba(139,0,0,0.5);
-          border-radius:3px;color:var(--crimson);cursor:pointer;transition:all 0.15s;">Connect</button>
-        <button id="foundry-disconnect-btn" style="flex:1;padding:7px;font-family:'Cinzel',serif;font-size:9px;letter-spacing:0.12em;
-          text-transform:uppercase;background:transparent;border:0.5px solid var(--border-md);
-          border-radius:3px;color:var(--text-muted);cursor:pointer;transition:all 0.15s;">Disconnect</button>
-      </div>
-      <div id="foundry-panel-status" style="margin-top:10px;font-family:'EB Garamond',serif;font-size:12px;color:var(--text-muted);font-style:italic;">
-        ${connected ? '✦ Connected' : 'Not connected'}
-      </div>
-      <div style="margin-top:10px;font-family:'EB Garamond',serif;font-size:11px;color:var(--text-muted);line-height:1.5;font-style:italic;">
-        Requires the <em>vtm-sheet-bridge</em> module installed in Foundry.
-        If running Foundry as a desktop client, connection is not yet supported —
-        host Foundry as a server and connect via its URL instead.
-      </div>
-    `;
-    document.body.appendChild(panel);
-
-    document.getElementById('foundry-connect-btn').addEventListener('click', () => {
-      const url = document.getElementById('foundry-url-input').value.trim();
-      connect(url);
-      panel.remove();
-    });
-    document.getElementById('foundry-disconnect-btn').addEventListener('click', () => {
-      if (socket) { socket.disconnect(); socket = null; }
-      connected = false; setDot('off');
-      panel.remove();
-    });
-
-    // Close on outside click
-    setTimeout(() => {
-      document.addEventListener('click', function outside(e) {
-        if (!panel.contains(e.target) && e.target !== btn) {
-          panel.remove();
-          document.removeEventListener('click', outside);
-        }
-      });
-    }, 50);
-  }
-
-  if (btn) btn.addEventListener('click', buildPanel);
-  setDot('off');
-
-  // Auto-connect if a URL was previously saved
-  if (localStorage.getItem(SETTINGS_KEY)) {
-    setTimeout(() => connect(), 1500); // wait for page to settle
-  }
-
-  return { send, connect };
-})();
-</script>
-
 
 <script>
 // ── Dice-Only Mode (when opened as popout) ──────────────────────────
