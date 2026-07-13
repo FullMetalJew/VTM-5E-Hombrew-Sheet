@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>VtM 5e — World of Darkness: Convergence — Character Sheet v139</title>
+<title>VtM 5e — World of Darkness: Convergence — Character Sheet v82</title>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=Cinzel:wght@400;500;600&family=EB+Garamond:ital,wght@0,400;0,500;1,400;1,500&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -4349,7 +4349,7 @@ window.addEventListener('DOMContentLoaded', () => {
     <div id="dm-session-form" style="display:none;">
       <input type="date" id="dm-session-date-input">
       <input type="text" id="dm-session-title-input" placeholder="Session title..." maxlength="80">
-      <textarea id="dm-session-body-input" placeholder="What happened this session..." rows="4"></textarea>
+      <textarea id="dm-session-body-input" placeholder="What happened this session... (markdown supported — **bold**, _italic_, # headings, - lists, > quotes)" rows="4"></textarea>
       <div id="dm-session-form-actions">
         <button id="dm-session-save-btn">Save Entry</button>
         <button id="dm-session-cancel-btn">Cancel</button>
@@ -4402,24 +4402,6 @@ window.addEventListener('DOMContentLoaded', () => {
     border:0.5px solid rgba(139,0,0,0.5);border-radius:3px;color:var(--crimson);
     cursor:pointer;padding:3px 9px;white-space:nowrap;
     transition:opacity 0.3s,max-width 0.4s;max-width:100px;overflow:hidden;">&#x2193; Export</button>
-</div>
-
-<!-- FILE LINK — only ever shown by JS after feature-detecting the File System
-     Access API (Chromium-based browsers). Firefox/Safari never see this;
-     nothing here runs or renders for them. -->
-<div id="file-link-indicator" style="
-  display:none;
-  position:fixed;top:96px;left:0;z-index:9099;
-  background:rgba(10,5,8,0.94);backdrop-filter:blur(10px);
-  border:0.5px solid rgba(196,30,58,0.35);border-left:none;border-right:none;
-  border-radius:0 4px 4px 0;
-  padding:5px 10px 5px 12px;align-items:center;gap:7px;
-  font-family:'Cinzel',serif;font-size:8.5px;letter-spacing:0.1em;
-  text-transform:uppercase;cursor:pointer;color:var(--text-muted);
-  opacity:0.55;transition:opacity 0.25s;
-">
-  <span id="file-link-dot" style="width:6px;height:6px;border-radius:50%;background:var(--text-muted);flex-shrink:0;display:inline-block;"></span>
-  <span id="file-link-text" style="white-space:nowrap;">Link to file</span>
 </div>
 
 <!-- LAST SAVED — small, permanent, low-key reassurance. Not an alarm, just
@@ -7677,7 +7659,7 @@ window._advTip = _advTip; // expose globally for dice roller chips
   function simpleMarkdown(md) {
     if (!md.trim()) return '<p class="empty-note">Start writing your notes here... markdown is supported.</p>';
     let html = md
-      .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;')
       .replace(/^#{3}\s+(.+)$/gm,'<h3>$1</h3>')
       .replace(/^#{2}\s+(.+)$/gm,'<h2>$1</h2>')
       .replace(/^#\s+(.+)$/gm,'<h1>$1</h1>')
@@ -7694,6 +7676,7 @@ window._advTip = _advTip; // expose globally for dice roller chips
       .replace(/\n/g,'<br>');
     return '<p>' + html + '</p>';
   }
+  window.simpleMarkdown = simpleMarkdown;
 
   function renderNotesPreview() {
     notesPreview.innerHTML = simpleMarkdown(notesContent);
@@ -8974,24 +8957,24 @@ window._advTip = _advTip; // expose globally for dice roller chips
   window.syncDiceState = syncDiceState;   // new canonical name
 
   // ── Direct file-link autosave (Chromium only, feature-detected) ────
-  // Everything in this block is behind a capability check. On Firefox/
-  // Safari, FS_ACCESS_SUPPORTED is false, the indicator is never shown,
-  // and none of these functions are ever called — this is purely additive
-  // and cannot change behavior for browsers that lack the API.
+  // The row is always visible (per request) so Firefox/Safari users can see
+  // the feature exists and understand why it's unavailable to them, rather
+  // than it silently not existing. Only the *behavior* is gated — clicking
+  // it on an unsupported browser explains itself instead of doing nothing.
   const FS_ACCESS_SUPPORTED = (typeof window.showSaveFilePicker === 'function');
+  window.FS_ACCESS_SUPPORTED = FS_ACCESS_SUPPORTED;
   let _linkedFileHandle = null;
   let _linkedFileName   = '';
   let _fileWriteBusy    = false;
 
-  function _fileLinkEl() { return document.getElementById('file-link-indicator'); }
+  function _fileLinkEl() { return document.getElementById('dm-file-link-row'); }
 
   function _setFileLinkStatus(mode) {
     const el = _fileLinkEl(); if (!el) return;
-    const dot  = document.getElementById('file-link-dot');
     const text = document.getElementById('file-link-text');
     el.classList.remove('linked', 'syncing', 'link-error');
     if (mode === 'unlinked') {
-      text.textContent = 'Link to file';
+      text.textContent = 'Link to File (Chromium Only)';
     } else if (mode === 'syncing') {
       el.classList.add('linked', 'syncing');
       text.textContent = 'Saving to ' + _linkedFileName + '…';
@@ -9043,16 +9026,51 @@ window._advTip = _advTip; // expose globally for dice roller chips
     }
   }
 
-  if (FS_ACCESS_SUPPORTED) {
-    const el = _fileLinkEl();
-    if (el) {
-      el.style.display = 'flex';
-      _setFileLinkStatus('unlinked');
-      el.addEventListener('click', () => { _linkToFile(); });
+  const _fileLinkTip = (() => {
+    const el = document.createElement('div');
+    el.className = 'disc-tooltip clan-tooltip';
+    document.body.appendChild(el);
+
+    function show(x, y) {
+      const supportedText = FS_ACCESS_SUPPORTED
+        ? 'Your browser supports this — click to pick or create a file on your computer.'
+        : 'Your current browser doesn\u2019t support this — it relies on the File System Access API, which only Chromium-based browsers (Chrome, Edge, Brave, Opera, etc.) implement. Firefox and Safari can\u2019t offer it. Everything else in the sheet still works normally either way, including manual Export/Import.';
+      el.innerHTML =
+        '<div class="dt-disc-header"><span class="dt-disc">Link to File</span></div>' +
+        '<div class="dt-desc">Once linked, every autosave writes straight into that file on your disk instead of just browser storage — no re-downloading a new copy each time, and no risk of losing work if you forget to export. ' + supportedText + '</div>';
+      position(x, y); el.classList.add('visible');
     }
-  }
+    function position(x, y) {
+      const tw = 340;
+      let tx = x + 16; if (tx + tw > window.innerWidth - 4) tx = x - tw - 8;
+      let ty = y - 10; if (ty + 200 > window.innerHeight - 4) ty = window.innerHeight - 204;
+      if (ty < 4) ty = 4;
+      el.style.left = tx + 'px'; el.style.top = ty + 'px';
+    }
+    function move(x, y) { if (el.classList.contains('visible')) position(x, y); }
+    function hide() { el.classList.remove('visible'); }
+    return { show, move, hide };
+  })();
+  window._fileLinkTip = _fileLinkTip;
+
+  // wireFileLinkRow() is called from the DM ROSTER PANEL script block further
+  // down — this code runs before the DM panel's HTML (where the row now
+  // lives) has been parsed, so wiring it here would silently fail to find
+  // the element, same issue the theme toggle hit earlier.
+
+  // Any pop-out window (dice-only, or the generic #popout-<id> windows) is
+  // a narrow, single-purpose tool showing one small piece of content — not
+  // a real editing session of the character. Letting it run the normal
+  // dirty-tracking/autosave/roster-sync machinery was the actual cause of
+  // the cross-tab "character changed elsewhere" warning firing just from
+  // popping a window open: content-relay code fires an 'input' event to
+  // refresh the popup's own preview, that event bubbles to the global
+  // listener below, markDirty() fires, and its writes to the shared roster
+  // keys look — to the main tab — exactly like a real edit happened.
+  const _isPopoutContext = location.hash === '#dice-only' || /^#popout-/.test(location.hash);
 
   function markDirty() {
+    if (_isPopoutContext) return;
     showUnsaved();
     // Immediately (not debounced) flag whichever roster character is
     // currently active as having unsaved changes — the dirty state belongs
@@ -10574,9 +10592,33 @@ window._advTip = _advTip; // expose globally for dice roller chips
     padding: 10px 12px 12px;
     border-top: 0.5px solid rgba(139,0,0,0.2);
     flex-shrink: 0;
-    display: flex; align-items: center; justify-content: center;
+    display: flex; flex-direction: column; align-items: stretch; gap: 10px;
   }
   body.parchment #dm-panel-footer { border-top-color: rgba(122,21,21,0.2); }
+  #dm-file-link-row {
+    display: flex; align-items: center; justify-content: center; gap: 7px;
+    cursor: pointer; padding: 5px 4px; border-radius: 3px;
+    border: 0.5px solid rgba(139,0,0,0.25);
+    font-family: 'Cinzel', serif; font-size: 9px; letter-spacing: 0.08em;
+    text-transform: uppercase; color: var(--text-muted);
+    transition: opacity 0.2s, border-color 0.2s, color 0.2s;
+  }
+  #dm-file-link-row:hover { border-color: rgba(139,0,0,0.5); color: var(--text-primary); }
+  #dm-file-link-row #file-link-dot {
+    width: 6px; height: 6px; border-radius: 50%; background: var(--text-muted); flex-shrink: 0;
+  }
+  #dm-file-link-row #file-link-text { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  #dm-file-link-row.unsupported { opacity: 0.45; cursor: not-allowed; }
+  #dm-file-link-row.unsupported:hover { border-color: rgba(139,0,0,0.25); color: var(--text-muted); }
+  #dm-file-link-row.linked { color: #6aba6a; border-color: rgba(106,186,106,0.35); }
+  #dm-file-link-row.linked:hover { color: #8afa8a; border-color: rgba(106,186,106,0.6); }
+  #dm-file-link-row.linked #file-link-dot { background: #6aba6a; box-shadow: 0 0 5px #6aba6a; }
+  #dm-file-link-row.syncing #file-link-dot { background: var(--gold); box-shadow: 0 0 5px var(--gold); }
+  #dm-file-link-row.link-error { color: var(--crimson); border-color: rgba(196,30,58,0.4); }
+  #dm-file-link-row.link-error #file-link-dot { background: var(--crimson); box-shadow: 0 0 5px var(--crimson); }
+  body.parchment #dm-file-link-row { border-color: rgba(122,21,21,0.2); color: #8a6840; }
+  body.parchment #dm-file-link-row:hover { border-color: rgba(122,21,21,0.4); color: #3e2810; }
+  body.parchment #dm-file-link-row.linked { color: #2a6a1a; }
   #dm-panel-title {
     font-family: 'Cinzel', serif; font-size: 11px;
     letter-spacing: 0.2em; text-transform: uppercase;
@@ -10716,8 +10758,8 @@ window._advTip = _advTip; // expose globally for dice roller chips
   #dm-date-fields { flex: 1; display: flex; flex-direction: column; gap: 5px; min-width: 0; }
   #dm-date-input, #dm-date-label-input, #dm-session-date-input, #dm-session-title-input, #dm-session-body-input {
     background: rgba(255,255,255,0.04); border: 0.5px solid rgba(139,0,0,0.3); border-radius: 3px;
-    color: var(--text-primary); font-family: 'EB Garamond', serif; font-size: 12.5px;
-    padding: 5px 7px; outline: none; width: 100%; box-sizing: border-box;
+    color: var(--text-primary); font-family: 'EB Garamond', serif; font-size: 13.5px;
+    padding: 6px 8px; outline: none; width: 100%; box-sizing: border-box;
   }
   #dm-date-input:focus, #dm-date-label-input:focus, #dm-session-date-input:focus,
   #dm-session-title-input:focus, #dm-session-body-input:focus { border-color: var(--crimson); }
@@ -10749,13 +10791,34 @@ window._advTip = _advTip; // expose globally for dice roller chips
   #dm-session-log-empty { font-family: 'EB Garamond', serif; font-size: 12px; font-style: italic; color: var(--text-muted); opacity: 0.6; padding: 4px 0 2px; }
   #dm-session-log-empty.hidden { display: none; }
   .dm-session-entry {
-    border: 0.5px solid rgba(139,0,0,0.2); border-radius: 4px; padding: 8px 9px;
+    border: 0.5px solid rgba(139,0,0,0.2); border-radius: 4px; padding: 9px 11px;
     background: rgba(255,255,255,0.02);
   }
-  .dm-session-entry-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin-bottom: 3px; }
-  .dm-session-entry-title { font-family: 'Cinzel', serif; font-size: 11.5px; color: var(--text-gold); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .dm-session-entry-date { font-family: 'EB Garamond', serif; font-size: 10.5px; color: var(--text-muted); font-style: italic; flex-shrink: 0; }
-  .dm-session-entry-body { font-family: 'EB Garamond', serif; font-size: 12px; color: var(--text-secondary); line-height: 1.45; white-space: pre-line; }
+  .dm-session-entry-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin-bottom: 4px; }
+  .dm-session-entry-title { font-family: 'Cinzel', serif; font-size: 12.5px; color: var(--text-gold); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .dm-session-entry-date { font-family: 'EB Garamond', serif; font-size: 11px; color: var(--text-muted); font-style: italic; flex-shrink: 0; }
+  .dm-session-entry-body { font-family: 'EB Garamond', serif; font-size: 14.5px; color: var(--text-secondary); line-height: 1.55; }
+  .dm-session-entry-body p { margin: 4px 0; }
+  .dm-session-entry-body h1, .dm-session-entry-body h2, .dm-session-entry-body h3 {
+    font-family: 'Cinzel', serif; color: var(--crimson); margin: 10px 0 5px;
+    border-bottom: 0.5px solid rgba(139,0,0,0.25); padding-bottom: 3px;
+  }
+  .dm-session-entry-body h1 { font-size: 17px; }
+  .dm-session-entry-body h2 { font-size: 15.5px; }
+  .dm-session-entry-body h3 { font-size: 14.5px; }
+  .dm-session-entry-body strong { color: var(--text-primary); }
+  .dm-session-entry-body em { color: var(--text-gold); font-style: italic; }
+  .dm-session-entry-body blockquote {
+    border-left: 2px solid rgba(139,0,0,0.5); padding-left: 12px;
+    margin: 8px 0; color: var(--text-muted); font-style: italic;
+  }
+  .dm-session-entry-body ul, .dm-session-entry-body ol { padding-left: 18px; margin: 5px 0; }
+  .dm-session-entry-body li { margin: 2px 0; }
+  .dm-session-entry-body hr { border: none; border-top: 0.5px solid rgba(139,0,0,0.3); margin: 10px 0; }
+  .dm-session-entry-body code {
+    background: rgba(139,0,0,0.1); padding: 1px 5px; border-radius: 2px;
+    font-family: monospace; font-size: 13px; color: var(--crimson);
+  }
   .dm-session-entry-actions { display: flex; gap: 4px; margin-top: 6px; }
   .dm-session-entry-actions button {
     background: transparent; border: 0.5px solid rgba(139,0,0,0.25); border-radius: 3px;
@@ -10769,6 +10832,9 @@ window._advTip = _advTip; // expose globally for dice roller chips
   body.parchment .dm-session-entry { background: rgba(255,255,255,0.25); border-color: rgba(122,21,21,0.2); }
   body.parchment .dm-session-entry-title { color: #7a5010; }
   body.parchment .dm-session-entry-date, body.parchment .dm-session-entry-body { color: #4a3818; }
+  body.parchment .dm-session-entry-body h1, body.parchment .dm-session-entry-body h2, body.parchment .dm-session-entry-body h3 { color: #8b1a2a; }
+  body.parchment .dm-session-entry-body strong { color: #2a1808; }
+  body.parchment .dm-session-entry-body em { color: #8a6840; }
 
   #dm-drop-zone {
     margin: 0 12px 8px; flex-shrink: 0;
@@ -12144,11 +12210,16 @@ const DICE_ANIM = (() => {
       queue=[];doneCb=null;eachCb=null;
     },
     startIdle() { startIdleLoop(); },
+    stopIdle()  { stopIdleLoop(); },
     drawOnce()  { drawIdleScene(); },
   };
 })();
-// Draw the idle scene immediately so the stage isn't black on load
-setTimeout(() => { try { DICE_ANIM.startIdle(); } catch(e){} }, 100);
+// Draw a single static frame so the stage isn't black on load — NOT a
+// continuous animation loop. Starting the full 60fps idle loop before the
+// user has ever opened the dice window wastes CPU for the entire session;
+// the real loop only needs to run while the window is actually visible
+// (see openDice()/closeDice() below).
+setTimeout(() => { try { DICE_ANIM.drawOnce(); } catch(e){} }, 100);
 
 // ── Attr/Skill Tooltip + Drag-to-Roller ─────────────────────────────
 const _astTip = (() => {
@@ -13091,6 +13162,7 @@ setTimeout(scheduleDrips, 1000);
     win.classList.remove('open');
     isOpen = false;
     removeMobileLayout();
+    try { DICE_ANIM.stopIdle(); } catch(e) {}
   }
   window.closeDice = closeDice;
   window.openDice  = openDice;
@@ -14990,6 +15062,10 @@ setTimeout(scheduleDrips, 1000);
       <div class="tt-track"><div class="tt-thumb"></div></div>
       <span class="ttl right" id="ttlParchment">Parchment</span>
     </div>
+    <div id="dm-file-link-row">
+      <span id="file-link-dot"></span>
+      <span id="file-link-text">Link to File (Chromium Only)</span>
+    </div>
   </div>
 </div>
 
@@ -15080,7 +15156,7 @@ setTimeout(scheduleDrips, 1000);
           <span class="dm-session-entry-title">${escHtml(e.title)}</span>
           <span class="dm-session-entry-date">${fmtDate(e.date)}</span>
         </div>
-        <div class="dm-session-entry-body">${escHtml(e.body)}</div>
+        <div class="dm-session-entry-body">${e.body ? (window.simpleMarkdown || escHtml)(e.body) : ''}</div>
         <div class="dm-session-entry-actions">
           <button data-action="edit" data-id="${e.id}">Edit</button>
           <button data-action="delete" data-id="${e.id}">Delete</button>
@@ -15251,6 +15327,29 @@ setTimeout(scheduleDrips, 1000);
     themeToggleEl.addEventListener('click', () => {
       if (typeof window.applyTheme === 'function') window.applyTheme(!document.body.classList.contains('parchment'));
     });
+  }
+
+  // ── File Link row — also lives in this panel's footer, same ordering
+  // reason as the theme toggle above. Always shown (per request) so
+  // Firefox/Safari users see the feature exists and understand why it's
+  // unavailable to them, rather than it silently not being there.
+  const fileLinkRowEl = document.getElementById('dm-file-link-row');
+  if (fileLinkRowEl && typeof window._setFileLinkStatus === 'function') {
+    if (!window.FS_ACCESS_SUPPORTED) fileLinkRowEl.classList.add('unsupported');
+    window._setFileLinkStatus('unlinked');
+    fileLinkRowEl.addEventListener('click', () => {
+      if (window.FS_ACCESS_SUPPORTED) {
+        if (typeof window._linkToFile === 'function') window._linkToFile();
+      } else {
+        const msg = 'Link to File needs a Chromium-based browser (Chrome, Edge, Brave...) — use Export/Import here instead.';
+        try { showToast(msg); } catch(e) { alert(msg); }
+      }
+    });
+    if (window._fileLinkTip) {
+      fileLinkRowEl.addEventListener('mouseenter', e => window._fileLinkTip.show(e.clientX, e.clientY));
+      fileLinkRowEl.addEventListener('mousemove',  e => window._fileLinkTip.move(e.clientX, e.clientY));
+      fileLinkRowEl.addEventListener('mouseleave', () => window._fileLinkTip.hide());
+    }
   }
 
   const ROSTER_KEY  = 'vtm_dm_roster';
@@ -15933,7 +16032,7 @@ setTimeout(scheduleDrips, 1000);
 
   function simpleMarkdown(text) {
     return text
-      .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;')
       .replace(/^### (.+)$/gm,'<h3>$1</h3>')
       .replace(/^## (.+)$/gm,'<h2>$1</h2>')
       .replace(/^# (.+)$/gm,'<h1>$1</h1>')
