@@ -2861,6 +2861,123 @@
   }
   .anat-editor-close-btn:hover { border-color: var(--gold-border); color: var(--text-gold); }
 
+  /* ── VISUAL ANATOMY MODE ── */
+  .anat-view-switch {
+    display: flex; gap: 6px; padding: 10px 18px 0;
+  }
+  .anat-view-btn {
+    font-family: 'Cinzel', serif; font-size: 10.5px; letter-spacing: 0.1em; text-transform: uppercase;
+    padding: 6px 14px; border-radius: 3px; cursor: pointer; user-select: none;
+    border: 0.5px solid var(--border-md); color: var(--text-muted); background: transparent;
+    transition: all 0.15s;
+  }
+  .anat-view-btn:hover { border-color: var(--gold-border); color: var(--text-gold); }
+  .anat-view-btn.active { background: rgba(196,30,58,0.16); border-color: rgba(196,30,58,0.5); color: #ff8a9a; }
+  .anat-view-btn:focus-visible { outline: 1.5px solid var(--crimson); outline-offset: 2px; }
+
+  .anat-legend { align-items: center; }
+  .anat-legend-glyph {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 8px; height: 8px; font-size: 8px; line-height: 1; flex-shrink: 0;
+  }
+
+  .anat-visual-root { display: none; padding: 4px 14px 16px; }
+  .anat-visual-root.anat-visual-active { display: block; }
+  .anat-tree.anat-list-hidden { display: none; }
+
+  .anat-side-switch { display: flex; justify-content: center; gap: 6px; margin-bottom: 10px; }
+
+  .anat-silhouette-wrap {
+    display: flex; justify-content: center; position: relative;
+    background: radial-gradient(ellipse 70% 60% at 50% 30%, rgba(139,0,0,0.07) 0%, transparent 75%);
+    border-radius: var(--radius-md); transition: background 0.25s;
+  }
+  .anat-silhouette-wrap.anat-side-back {
+    background: radial-gradient(ellipse 70% 60% at 50% 30%, rgba(90,20,30,0.05) 0%, transparent 75%);
+  }
+  .anat-svg-body { width: min(280px, 100%); height: auto; overflow: visible; }
+  .anat-svg-body.anat-svg-hidden { display: none; }
+
+  .anat-svg-region {
+    cursor: pointer; transition: filter 0.15s, stroke-width 0.15s, opacity 0.15s;
+    stroke: rgba(255,255,255,0.28); stroke-width: 1;
+  }
+  .anat-svg-region:hover { filter: brightness(1.25); }
+  .anat-svg-region:focus-visible { outline: none; stroke: var(--crimson); stroke-width: 2.5; }
+  .anat-svg-region.anat-selected {
+    stroke: var(--crimson); stroke-width: 2.5;
+    filter: drop-shadow(0 0 5px rgba(212,32,64,0.85));
+  }
+  .anat-svg-glyph {
+    font-family: 'Cinzel', serif; font-weight: 700; pointer-events: none;
+    text-anchor: middle; dominant-baseline: central; fill: rgba(10,5,8,0.75);
+  }
+  .anat-svg-label {
+    font-family: 'Cinzel', serif; font-size: 9px; letter-spacing: 0.06em;
+    pointer-events: none; text-anchor: middle; fill: var(--text-muted);
+  }
+  .anat-svg-watermark {
+    font-family: 'Cinzel Decorative','Cinzel',serif; font-size: 10px; letter-spacing: 0.28em;
+    pointer-events: none; fill: rgba(201,168,90,0.4); text-transform: uppercase;
+  }
+  .anat-svg-decor { pointer-events: none; }
+
+  .anat-visual-hint {
+    text-align: center; font-family: 'EB Garamond', serif; font-size: 11px; font-style: italic;
+    color: var(--text-muted); margin: 8px 0 2px; opacity: 0.75;
+  }
+
+  /* ── Detail panel (Head / Hand / Foot zoomed views) ── */
+  /* Lighter/no-blur backdrop of its own (vs .adv-preset-overlay's heavy
+     blur) since the shared status editor can open on top of this one when
+     a detail-panel row is clicked — stacking two full blurs looked muddy. */
+  .anat-detail-overlay {
+    display: none; position: fixed; inset: 0; z-index: 9840;
+    background: rgba(0,0,0,0.45);
+    align-items: center; justify-content: center;
+  }
+  .anat-detail-overlay.open { display: flex; }
+  .anat-detail-row-root { border-bottom: 0.5px solid var(--border-red); margin-bottom: 4px; padding-bottom: 11px; }
+  .anat-detail-row-root .anat-detail-label { color: var(--text-primary); font-weight: 700; }
+  .anat-detail-modal {
+    background: rgba(10,5,8,0.98); border: 0.5px solid rgba(139,0,0,0.55);
+    border-radius: 8px; box-shadow: 0 32px 100px rgba(0,0,0,0.95);
+    width: min(380px, 94vw); max-height: 82vh;
+    display: flex; flex-direction: column; overflow: hidden;
+  }
+  body.parchment .anat-detail-modal { background: rgba(242,233,212,0.99); border-color: rgba(122,21,21,0.4); }
+  .anat-detail-header {
+    display: flex; align-items: center; gap: 12px;
+    padding: 15px 18px 11px; border-bottom: 0.5px solid rgba(139,0,0,0.25); flex-shrink: 0;
+  }
+  .anat-detail-title {
+    font-family: 'Cinzel Decorative','Cinzel',serif; font-size: 12.5px;
+    letter-spacing: 0.1em; text-transform: uppercase; color: var(--crimson); flex: 1;
+  }
+  body.parchment .anat-detail-title { color: #8b1a1a; }
+  .anat-detail-body { flex: 1; overflow-y: auto; scrollbar-width: thin; padding: 6px 8px 12px; }
+  .anat-detail-row {
+    display: flex; align-items: center; gap: 9px; padding: 8px 10px; border-radius: 3px;
+    cursor: pointer; transition: background 0.12s;
+  }
+  .anat-detail-row:hover, .anat-detail-row:focus-visible { background: var(--bg-hover); }
+  .anat-detail-row:focus-visible { outline: 1.5px solid var(--crimson); outline-offset: -1px; }
+  .anat-detail-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; box-shadow: 0 0 5px currentColor; }
+  .anat-detail-label {
+    font-family: 'Cinzel', serif; font-size: 12px; letter-spacing: 0.03em;
+    color: var(--text-secondary); flex: 1;
+  }
+
+  @media (max-width: 640px) {
+    .anat-svg-body { width: min(230px, 92vw); }
+    .anat-view-btn { padding: 7px 12px; font-size: 10px; }
+    .anat-detail-modal { width: 94vw; }
+  }
+  @media (pointer: coarse) {
+    .anat-svg-region { stroke-width: 1.25; }
+    .anat-detail-row { padding: 10px 10px; }
+  }
+
   /* ── Dice roll reference modal ── */
   .dice-info-modal {
     background: rgba(10,5,8,0.98); border: 0.5px solid rgba(139,0,0,0.55);
@@ -3294,27 +3411,6 @@
  </div>
 </div>
     </div>
-
-    <!-- Known Languages sub-section -->
-    <div class="tracker-sub-header bp-sub" id="languagesHeader" data-label="Known Languages">
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M12 3C6.5 3 2 7.5 2 12s4.5 9 10 9 10-4.5 10-9S17.5 3 12 3z" stroke="currentColor" stroke-width="1.1" fill="none"/><path d="M2 12h20M12 3c-2.5 2.5-4 6-4 9s1.5 6.5 4 9M12 3c2.5 2.5 4 6 4 9s-1.5 6.5-4 9" stroke="currentColor" stroke-width="0.9" stroke-linecap="round"/></svg>
-      Known Languages
-      <span class="collapse-arrow">▾</span>
-    </div>
-    <div class="tracker-sub-body collapsed" id="languagesBody">
-      <div style="padding:10px 18px 4px;">
-        <div id="languageRows"></div>
-        <button id="addLanguageBtn" onclick="addLanguageRow()" style="
-          margin:6px 0 12px;font-family:'Cinzel',serif;font-size:11px;letter-spacing:0.14em;
-          text-transform:uppercase;color:var(--text-muted);background:transparent;
-          border:0.5px solid var(--border-md);border-radius:2px;padding:4px 12px;
-          cursor:pointer;transition:all 0.2s;display:flex;align-items:center;gap:4px;"
-          onmouseover="this.style.borderColor='var(--gold-border)';this.style.color='var(--text-gold)'"
-          onmouseout="this.style.borderColor='var(--border-md)';this.style.color='var(--text-muted)'">
-          <span style="font-size:15px;line-height:1;">+</span> Add Language
-        </button>
-      </div>
-    </div>
   </div>
 
   <!-- STATUS TRACKERS -->
@@ -3455,20 +3551,35 @@
     </div><!-- end masqBody -->
 
     <!-- ANATOMY / LIMB STATUS sub-section -->
-    <div class="tracker-sub-header bp-sub" id="anatomyHeader" data-label="Anatomy — Limb Status">
+    <div class="tracker-sub-header bp-sub" id="anatomyHeader" data-label="Anatomy">
       <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="5" r="2.6" stroke="currentColor" stroke-width="1.1"/><path d="M12 7.6 L12 15 M12 10 L7 12.5 L5.5 18 M12 10 L17 12.5 L18.5 18 M12 15 L9 22 M12 15 L15 22" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      Anatomy — Limb Status
+      Anatomy
       <span class="collapse-arrow">▾</span>
     </div>
     <div class="tracker-sub-body collapsed" id="anatomyBody">
       <div class="anat-legend">
         <div class="anat-legend-item"><span class="anat-legend-dot" style="color:#5cb85c;background:#5cb85c;"></span>Healthy</div>
-        <div class="anat-legend-item"><span class="anat-legend-dot" style="color:#d4c04a;background:#d4c04a;"></span>Superficial</div>
-        <div class="anat-legend-item"><span class="anat-legend-dot" style="color:#e08a3c;background:#e08a3c;"></span>Aggravated</div>
-        <div class="anat-legend-item"><span class="anat-legend-dot" style="color:#d4304a;background:#d4304a;"></span>Crippled</div>
-        <div class="anat-legend-item"><span class="anat-legend-dot" style="color:#7a7a82;background:#7a7a82;"></span>Missing</div>
+        <div class="anat-legend-item"><span class="anat-legend-dot" style="color:#d4c04a;background:#d4c04a;"></span><span class="anat-legend-glyph" style="color:#d4c04a;">•</span>Superficial</div>
+        <div class="anat-legend-item"><span class="anat-legend-dot" style="color:#e08a3c;background:#e08a3c;"></span><span class="anat-legend-glyph" style="color:#e08a3c;">◆</span>Aggravated</div>
+        <div class="anat-legend-item"><span class="anat-legend-dot" style="color:#d4304a;background:#d4304a;"></span><span class="anat-legend-glyph" style="color:#d4304a;">✕</span>Crippled</div>
+        <div class="anat-legend-item"><span class="anat-legend-dot" style="color:#7a7a82;background:#7a7a82;"></span><span class="anat-legend-glyph" style="color:#7a7a82;">∅</span>Missing (crosshatch)</div>
       </div>
+
+      <div class="anat-view-switch" role="group" aria-label="Anatomy tracker view">
+        <button type="button" class="anat-view-btn" id="anatViewListBtn" aria-pressed="true">List View</button>
+        <button type="button" class="anat-view-btn" id="anatViewVisualBtn" aria-pressed="false">Visual View</button>
+      </div>
+
       <div class="anat-tree" id="anatomyTreeRoot"></div>
+
+      <div class="anat-visual-root" id="anatomyVisualRoot">
+        <div class="anat-side-switch" role="group" aria-label="Body silhouette side">
+          <button type="button" class="anat-view-btn" id="anatSideFrontBtn" aria-pressed="true">Front</button>
+          <button type="button" class="anat-view-btn" id="anatSideBackBtn" aria-pressed="false">Back</button>
+        </div>
+        <div class="anat-silhouette-wrap" id="anatSilhouetteWrap"></div>
+        <div class="anat-visual-hint">Click or press Enter on a region to view and edit its status. Head, hands, and feet open a detail panel for fine anatomy.</div>
+      </div>
     </div><!-- end anatomyBody -->
   </div>
 
@@ -3637,6 +3748,27 @@
         <textarea id="xpLog" placeholder="What was purchased and when... e.g. Session 4 — Bought Dominate •• (12xp)&#10;Session 6 — Raised Subterfuge to ••• (6xp)"></textarea>
       </div>
     </div><!-- end xpBody -->
+
+    <!-- Known Languages sub-section -->
+    <div class="tracker-sub-header bp-sub" id="languagesHeader" data-label="Known Languages">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M12 3C6.5 3 2 7.5 2 12s4.5 9 10 9 10-4.5 10-9S17.5 3 12 3z" stroke="currentColor" stroke-width="1.1" fill="none"/><path d="M2 12h20M12 3c-2.5 2.5-4 6-4 9s1.5 6.5 4 9M12 3c2.5 2.5 4 6 4 9s-1.5 6.5-4 9" stroke="currentColor" stroke-width="0.9" stroke-linecap="round"/></svg>
+      Known Languages
+      <span class="collapse-arrow">▾</span>
+    </div>
+    <div class="tracker-sub-body collapsed" id="languagesBody">
+      <div style="padding:10px 18px 4px;">
+        <div id="languageRows"></div>
+        <button id="addLanguageBtn" onclick="addLanguageRow()" style="
+          margin:6px 0 12px;font-family:'Cinzel',serif;font-size:11px;letter-spacing:0.14em;
+          text-transform:uppercase;color:var(--text-muted);background:transparent;
+          border:0.5px solid var(--border-md);border-radius:2px;padding:4px 12px;
+          cursor:pointer;transition:all 0.2s;display:flex;align-items:center;gap:4px;"
+          onmouseover="this.style.borderColor='var(--gold-border)';this.style.color='var(--text-gold)'"
+          onmouseout="this.style.borderColor='var(--border-md)';this.style.color='var(--text-muted)'">
+          <span style="font-size:15px;line-height:1;">+</span> Add Language
+        </button>
+      </div>
+    </div>
   </div>
 
   <!-- SKILLS -->
@@ -8245,11 +8377,20 @@ window._advTip = _advTip; // expose globally for dice roller chips
     els.badge.style.color = info.color;
     els.badge.style.background = info.color + '22';
     els.badge.style.border = '0.5px solid ' + info.color + '55';
+    if (els.row) els.row.setAttribute('aria-label', anatBreadcrumb(id) + ' — ' + info.label);
   }
-  // Update this node's row plus every ancestor (aggregate severity bubbles up)
+  // Update this node's row plus every ancestor (aggregate severity bubbles up).
+  // This is the SINGLE point every mutation path (list row click, silhouette
+  // click, detail-panel row click) funnels through via the shared
+  // _anatEditor's onAnatChange() — so list view, visual view, and any open
+  // detail panel all repaint from here with no separate state or listeners.
   function anatUpdateRowFor(id) {
     let cur = id;
-    while (cur) { anatApplyRowVisuals(cur); cur = ANAT_PARENT[cur]; }
+    while (cur) {
+      anatApplyRowVisuals(cur);
+      if (typeof anatRefreshVisualEl === 'function') anatRefreshVisualEl(cur);
+      cur = ANAT_PARENT[cur];
+    }
   }
 
   // ── Detail editor modal (single shared instance, built lazily) ──
@@ -8388,7 +8529,11 @@ window._advTip = _advTip; // expose globally for dice roller chips
     badge.className = 'anat-badge';
     row.appendChild(badge);
 
-    anatRowEls[node.id] = { dot, badge };
+    row.tabIndex = 0;
+    row.setAttribute('role', 'button');
+    row.setAttribute('aria-label', anatBreadcrumb(node.id));
+
+    anatRowEls[node.id] = { dot, badge, row };
     anatApplyRowVisuals(node.id);
 
     let childrenEl = null;
@@ -8409,6 +8554,10 @@ window._advTip = _advTip; // expose globally for dice roller chips
     });
 
     row.addEventListener('click', () => { _anatEditor.open(node.id); });
+    row.addEventListener('keydown', e => {
+      if (e.target !== row) return; // don't hijack Enter/Space on the expand arrow
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); _anatEditor.open(node.id); }
+    });
     row.addEventListener('mouseenter', e => _anatTip.showFor(node.id, e.clientX, e.clientY));
     row.addEventListener('mousemove',  e => _anatTip.move(e.clientX, e.clientY));
     row.addEventListener('mouseleave', () => _anatTip.hide());
@@ -8429,6 +8578,358 @@ window._advTip = _advTip; // expose globally for dice roller chips
 
   // Initial render so a brand-new sheet (no saved state yet) still shows the tree
   renderAnatomyTree();
+
+  // ══════════════════════════════════════════════════════════════════
+  // ── ANATOMY VISUAL MODE ──────────────────────────────────────────
+  // ══════════════════════════════════════════════════════════════════
+  // Reuses anatState / ANATOMY_TREE / ANAT_STATUSES / ANAT_NODES / ANAT_PARENT
+  // / anatAggRank / anatBreadcrumb / _anatTip / _anatEditor verbatim — no
+  // parallel state, no duplicate ids, no separate mutation path. Every edit,
+  // from any view, goes through the one shared _anatEditor, whose
+  // onAnatChange() calls anatUpdateRowFor(), which we've extended (above)
+  // to also repaint whatever visual-mode elements are registered for that id.
+
+  let anatViewMode        = 'list';   // 'list' | 'visual' — persisted in state.anatomy.viewMode
+  let anatViewSide        = 'front';  // 'front' | 'back'  — persisted in state.anatomy.side
+  let anatVisualSelectedId = null;
+  let _anatVisualBuilt    = false;
+
+  // id -> [ {kind:'shape', el, glyphEl, patternId, labelBase} | {kind:'detailRow', row, dot, badge, labelBase} ]
+  const anatVisualEls = {};
+  function anatRegisterVisualEl(id, entry) {
+    (anatVisualEls[id] || (anatVisualEls[id] = [])).push(entry);
+  }
+  // Detail-panel rows are rebuilt every time a panel opens for a different
+  // root — drop stale references so we don't repaint/leak detached DOM.
+  function anatClearDetailVisualEls() {
+    Object.keys(anatVisualEls).forEach(id => {
+      anatVisualEls[id] = anatVisualEls[id].filter(e => e.kind !== 'detailRow');
+      if (!anatVisualEls[id].length) delete anatVisualEls[id];
+    });
+  }
+
+  // Non-color severity cues (icons + outline changes) so nothing here relies
+  // on color alone. Missing (rank 4) additionally swaps to a crosshatch fill.
+  const ANAT_RANK_GLYPH = ['', '•', '◆', '✕', '∅'];
+  const ANAT_RANK_DASH  = ['none', 'none', '3 2', 'none', '4 3'];
+
+  function anatRefreshVisualEl(id) {
+    const entries = anatVisualEls[id];
+    if (!entries || !entries.length) return;
+    const rank  = anatAggRank(id);
+    const info  = ANAT_RANK_INFO[rank];
+    const glyph = ANAT_RANK_GLYPH[rank];
+    entries.forEach(e => {
+      if (e.kind === 'shape') {
+        const fill = rank === 4 ? `url(#${e.patternId})` : `url(#anatGrad_${e.view}_${rank})`;
+        e.el.setAttribute('fill', fill);
+        e.el.style.stroke = rank === 0 ? 'rgba(255,255,255,0.28)' : info.color;
+        e.el.style.strokeDasharray = ANAT_RANK_DASH[rank];
+        e.el.style.strokeWidth = rank >= 3 ? '2.25' : '1';
+        e.el.setAttribute('aria-label', e.labelBase + ' — ' + info.label);
+        if (e.glyphEl) {
+          e.glyphEl.textContent = glyph;
+          e.glyphEl.style.fill = rank === 4 ? 'rgba(222,212,216,0.85)' : 'rgba(10,5,8,0.75)';
+        }
+      } else if (e.kind === 'detailRow') {
+        e.dot.style.color = info.color;
+        e.dot.style.background = info.color;
+        e.badge.textContent = info.label;
+        e.badge.style.color = info.color;
+        e.badge.style.background = info.color + '22';
+        e.badge.style.border = '0.5px solid ' + info.color + '55';
+        e.row.setAttribute('aria-label', e.labelBase + ' — ' + info.label);
+      }
+    });
+  }
+  window.anatRefreshVisualEl = anatRefreshVisualEl;
+
+  function anatSetSelected(id) {
+    anatVisualSelectedId = id;
+    document.querySelectorAll('.anat-svg-region.anat-selected').forEach(el => el.classList.remove('anat-selected'));
+    document.querySelectorAll(`.anat-svg-region[data-anat-id="${id}"]`).forEach(el => el.classList.add('anat-selected'));
+  }
+
+  // Clicking selects + opens editing UI but never itself changes status —
+  // status can only change via an explicit chip choice inside the shared editor.
+  function anatActivateRegion(id) {
+    anatSetSelected(id);
+    const node = ANAT_NODES[id];
+    if (node && node.children && node.children.length) {
+      _anatDetailPanel.open(id);
+    } else {
+      _anatEditor.open(id);
+    }
+  }
+
+  // ── Silhouette geometry ──────────────────────────────────────────
+  // One coordinate table per limb, defined for the SCREEN-LEFT column;
+  // the screen-right column is its mirror. Which anatomical side (l/r)
+  // renders on which screen column flips between front/back, since a
+  // front-facing figure mirrors the viewer and a back-facing one doesn't.
+  const ANAT_ARM_SHAPES = [
+    { key:'shoulder', label:'Shoulder',  kind:'circle', cx:47, cy:98,  r:14 },
+    { key:'upper',    label:'Upper Arm', kind:'rect',   x:38,  y:112, w:18, h:62, rx:9 },
+    { key:'elbow',    label:'Elbow',     kind:'circle', cx:47, cy:180, r:10 },
+    { key:'forearm',  label:'Forearm',   kind:'rect',   x:39,  y:190, w:16, h:58, rx:8 },
+    { key:'wrist',    label:'Wrist',     kind:'circle', cx:47, cy:254, r:8 },
+    { key:'hand',     label:'Hand',      kind:'rect',   x:33,  y:262, w:28, h:36, rx:10 },
+  ];
+  const ANAT_LEG_SHAPES = [
+    { key:'hip',   label:'Hip',   kind:'circle', cx:92,  cy:276, r:13 },
+    { key:'thigh', label:'Thigh', kind:'rect',   x:80,   y:288, w:26, h:92, rx:13 },
+    { key:'knee',  label:'Knee',  kind:'circle', cx:93,  cy:384, r:11 },
+    { key:'shin',  label:'Shin',  kind:'rect',   x:82,   y:396, w:22, h:88, rx:11 },
+    { key:'ankle', label:'Ankle', kind:'circle', cx:93,  cy:488, r:9 },
+    { key:'foot',  label:'Foot',  kind:'rect',   x:76,   y:494, w:42, h:24, rx:8 },
+  ];
+  function anatMirrorShape(s) {
+    return s.kind === 'circle' ? { ...s, cx: 240 - s.cx } : { ...s, x: 240 - s.x - s.w };
+  }
+
+  function anatRegionsForView(view) {
+    const leftSide  = view === 'front' ? 'r' : 'l'; // anatomical side drawn on screen-left
+    const rightSide = view === 'front' ? 'l' : 'r'; // anatomical side drawn on screen-right
+    const regions = [];
+    ANAT_ARM_SHAPES.forEach(s => {
+      regions.push({ ...s, id:`arm_${leftSide}_${s.key}`,  side:leftSide });
+      regions.push({ ...anatMirrorShape(s), id:`arm_${rightSide}_${s.key}`, side:rightSide });
+    });
+    ANAT_LEG_SHAPES.forEach(s => {
+      regions.push({ ...s, id:`leg_${leftSide}_${s.key}`,  side:leftSide });
+      regions.push({ ...anatMirrorShape(s), id:`leg_${rightSide}_${s.key}`, side:rightSide });
+    });
+    regions.push({ id:'head', kind:'circle', cx:120, cy:42, r:30 });
+    regions.push({ id:'neck', kind:'rect', x:104, y:70, w:32, h:20, rx:8 });
+    if (view === 'front') {
+      regions.push({ id:'chest',   kind:'rect', x:84, y:88,  w:72, h:66, rx:10 });
+      regions.push({ id:'abdomen', kind:'rect', x:86, y:154, w:68, h:56, rx:8 });
+    } else {
+      regions.push({ id:'back_up',  kind:'rect', x:84, y:88,  w:72, h:66, rx:10 });
+      regions.push({ id:'back_low', kind:'rect', x:86, y:154, w:68, h:56, rx:8 });
+    }
+    regions.push({ id:'pelvis', kind:'rect', x:84, y:210, w:72, h:56, rx:12 });
+    return regions;
+  }
+
+  function anatSideLabelsForView(view) {
+    const leftSide  = view === 'front' ? 'r' : 'l';
+    const rightSide = view === 'front' ? 'l' : 'r';
+    const sh = ANAT_ARM_SHAPES.find(s => s.key === 'shoulder');
+    return [
+      { x: sh.cx,       y: sh.cy - 22, text: leftSide.toUpperCase() },
+      { x: 240 - sh.cx, y: sh.cy - 22, text: rightSide.toUpperCase() },
+    ];
+  }
+
+  function anatBuildRegionMarkup(r, view) {
+    const [cx, cy] = r.kind === 'circle' ? [r.cx, r.cy] : [r.x + r.w / 2, r.y + r.h / 2];
+    const fontSize = r.kind === 'circle' ? Math.max(8, r.r * 1.05) : Math.max(8, Math.min(r.w, r.h) * 0.55);
+    const shapeAttrs = r.kind === 'circle'
+      ? `cx="${r.cx}" cy="${r.cy}" r="${r.r}"`
+      : `x="${r.x}" y="${r.y}" width="${r.w}" height="${r.h}" rx="${r.rx}"`;
+    const tag = r.kind === 'circle' ? 'circle' : 'rect';
+    return `<${tag} class="anat-svg-region" data-anat-id="${r.id}" id="anatsvg_${view}_${r.id}" ${shapeAttrs} tabindex="0" role="button"></${tag}>` +
+           `<text class="anat-svg-glyph" id="anatglyph_${view}_${r.id}" x="${cx}" y="${cy}" font-size="${fontSize}"></text>`;
+  }
+
+  // Per-status radial gradients (subtle highlight-to-shade) instead of flat
+  // fills, for a more deliberate "painted vellum" character-sheet look.
+  function anatBuildGradientDefs(view) {
+    return ANAT_STATUSES.map((s, rank) => {
+      const mid = rank === 0 ? 0.16 : 0.46;
+      const edge = rank === 0 ? 0.24 : 0.66;
+      return `<radialGradient id="anatGrad_${view}_${rank}" cx="32%" cy="26%" r="80%">` +
+        `<stop offset="0%" stop-color="#fff" stop-opacity="${rank === 0 ? 0.08 : 0.26}"/>` +
+        `<stop offset="40%" stop-color="${s.color}" stop-opacity="${mid}"/>` +
+        `<stop offset="100%" stop-color="${s.color}" stop-opacity="${edge}"/>` +
+        `</radialGradient>`;
+    }).join('');
+  }
+
+  // Non-interactive anatomical cues (pointer-events:none throughout) so the
+  // silhouette actually reads as "front" or "back" at a glance, not just
+  // via the toggle button label. Purely decorative — never clickable, never
+  // part of the tracked data.
+  function anatDecorativeMarkup(view) {
+    const g = `<g class="anat-svg-decor" pointer-events="none" fill="none" stroke="rgba(216,192,184,0.4)" stroke-width="1">`;
+    if (view === 'front') {
+      return g +
+        // Eyes, nose, closed mouth line
+        `<circle cx="109" cy="38" r="2" fill="rgba(216,192,184,0.5)" stroke="none"/>` +
+        `<circle cx="131" cy="38" r="2" fill="rgba(216,192,184,0.5)" stroke="none"/>` +
+        `<path d="M120,44 L117,52 L120,54" stroke-width="1"/>` +
+        `<path d="M112,60 Q120,63 128,60" stroke-width="1"/>` +
+        // Collarbones sweeping from the neck base out to each shoulder
+        `<path d="M113,90 Q80,93 49,99" stroke-width="1.1"/>` +
+        `<path d="M127,90 Q160,93 191,99" stroke-width="1.1"/>` +
+        // Sternum line + navel
+        `<path d="M120,92 L120,148" stroke-width="1" stroke-dasharray="1 4" opacity="0.7"/>` +
+        `<circle cx="120" cy="184" r="1.6" fill="rgba(216,192,184,0.45)" stroke="none"/>` +
+        `</g>`;
+    }
+    // BACK — hairline at the crown, a dashed spine with vertebra dots, and
+    // faint shoulder-blade curves. No facial features, since we're looking
+    // at the back of the head.
+    const vertebrae = [102, 118, 134, 150, 166, 182, 198, 214, 230, 246, 262]
+      .map(y => `<circle cx="120" cy="${y}" r="1.2" fill="rgba(216,192,184,0.4)" stroke="none"/>`).join('');
+    return g +
+      `<path d="M98,20 Q120,6 142,20" stroke-width="1.1"/>` +
+      `<path d="M102,26 Q120,15 138,26" stroke-width="0.8" opacity="0.7"/>` +
+      `<path d="M120,88 L120,264" stroke-width="1" stroke-dasharray="2 5" opacity="0.75"/>` +
+      vertebrae +
+      `<path d="M97,108 Q84,130 97,152" stroke-width="1"/>` +
+      `<path d="M143,108 Q156,130 143,152" stroke-width="1"/>` +
+      `</g>`;
+  }
+
+  function anatBuildSvgMarkup(view) {
+    const regions = anatRegionsForView(view);
+    const labels  = anatSideLabelsForView(view);
+    const patternId = `anatMissingHatch_${view}`;
+    const defs = `<defs>` +
+      `<pattern id="${patternId}" patternUnits="userSpaceOnUse" width="6" height="6" patternTransform="rotate(45)">` +
+      `<rect width="6" height="6" fill="rgba(20,14,18,0.92)"/><line x1="0" y1="0" x2="0" y2="6" stroke="#7a7a82" stroke-width="1.6"/></pattern>` +
+      anatBuildGradientDefs(view) +
+      `</defs>`;
+    const shadow = `<ellipse cx="120" cy="530" rx="92" ry="7" fill="rgba(0,0,0,0.35)" aria-hidden="true"/>`;
+    const shapes = regions.map(r => anatBuildRegionMarkup(r, view)).join('');
+    const decor  = anatDecorativeMarkup(view);
+    const lbls   = labels.map(l => `<text class="anat-svg-label" x="${l.x}" y="${l.y}" font-size="11">${l.text}</text>`).join('');
+    const watermark = `<text class="anat-svg-watermark" x="120" y="16" text-anchor="middle">${view === 'front' ? 'FRONT VIEW' : 'BACK VIEW'}</text>`;
+    return `<svg class="anat-svg-body${view === 'back' ? ' anat-svg-hidden' : ''}" id="anatSvg_${view}" viewBox="0 0 240 545" ` +
+      `xmlns="http://www.w3.org/2000/svg" role="group" aria-label="${view === 'front' ? 'Front' : 'Back'} body silhouette">` +
+      `${defs}${shadow}${shapes}${decor}${lbls}${watermark}</svg>`;
+  }
+
+  function anatWireVisualRegions(view, svgEl) {
+    const patternId = `anatMissingHatch_${view}`;
+    svgEl.querySelectorAll('.anat-svg-region').forEach(el => {
+      const id = el.dataset.anatId;
+      const glyphEl = svgEl.querySelector(`#anatglyph_${view}_${id}`);
+      anatRegisterVisualEl(id, { kind:'shape', el, glyphEl, patternId, view, labelBase: anatBreadcrumb(id) });
+      const activate = () => anatActivateRegion(id);
+      el.addEventListener('click', activate);
+      el.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); activate(); } });
+      el.addEventListener('mouseenter', e => _anatTip.showFor(id, e.clientX, e.clientY));
+      el.addEventListener('mousemove',  e => _anatTip.move(e.clientX, e.clientY));
+      el.addEventListener('mouseleave', () => _anatTip.hide());
+      el.addEventListener('focus', () => {
+        const rect = el.getBoundingClientRect();
+        _anatTip.showFor(id, rect.left + rect.width / 2, rect.top);
+      });
+      el.addEventListener('blur', () => _anatTip.hide());
+    });
+  }
+
+  function anatBuildVisual() {
+    const wrap = document.getElementById('anatSilhouetteWrap');
+    if (!wrap) return;
+    wrap.innerHTML = anatBuildSvgMarkup('front') + anatBuildSvgMarkup('back');
+    const frontSvg = document.getElementById('anatSvg_front');
+    const backSvg  = document.getElementById('anatSvg_back');
+    if (frontSvg) anatWireVisualRegions('front', frontSvg);
+    if (backSvg)  anatWireVisualRegions('back', backSvg);
+    _anatVisualBuilt = true;
+    anatApplySide(anatViewSide);
+    Object.keys(anatVisualEls).forEach(id => anatRefreshVisualEl(id));
+    if (anatVisualSelectedId) anatSetSelected(anatVisualSelectedId);
+  }
+
+  function anatApplySide(side) {
+    anatViewSide = side;
+    document.getElementById('anatSvg_front')?.classList.toggle('anat-svg-hidden', side !== 'front');
+    document.getElementById('anatSvg_back')?.classList.toggle('anat-svg-hidden', side !== 'back');
+    document.getElementById('anatSilhouetteWrap')?.classList.toggle('anat-side-back', side === 'back');
+    const fb = document.getElementById('anatSideFrontBtn'), bb = document.getElementById('anatSideBackBtn');
+    if (fb) { fb.classList.toggle('active', side === 'front'); fb.setAttribute('aria-pressed', side === 'front'); }
+    if (bb) { bb.classList.toggle('active', side === 'back');  bb.setAttribute('aria-pressed', side === 'back'); }
+  }
+
+  function anatSetViewMode(mode) {
+    anatViewMode = mode;
+    const listEl = document.getElementById('anatomyTreeRoot');
+    const visEl  = document.getElementById('anatomyVisualRoot');
+    const listBtn = document.getElementById('anatViewListBtn'), visBtn = document.getElementById('anatViewVisualBtn');
+    if (listEl) listEl.classList.toggle('anat-list-hidden', mode === 'visual');
+    if (visEl)  visEl.classList.toggle('anat-visual-active', mode === 'visual');
+    if (listBtn) { listBtn.classList.toggle('active', mode === 'list');   listBtn.setAttribute('aria-pressed', mode === 'list'); }
+    if (visBtn)  { visBtn.classList.toggle('active', mode === 'visual'); visBtn.setAttribute('aria-pressed', mode === 'visual'); }
+    if (mode === 'visual' && !_anatVisualBuilt) anatBuildVisual();
+  }
+  window.anatSetViewMode = anatSetViewMode;
+
+  // ── Detail panel (Head / Hand / Foot zoomed views) ──
+  // Generic: shows the clicked node's own row plus every descendant,
+  // flattened — this is what makes Head/Hand/Foot work from one function
+  // with zero per-panel hardcoding, straight off the existing tree shape.
+  const _anatDetailPanel = (() => {
+    const overlay = document.createElement('div');
+    overlay.className = 'anat-detail-overlay';
+    const modal = document.createElement('div');
+    modal.className = 'anat-detail-modal';
+    const header = document.createElement('div');
+    header.className = 'anat-detail-header';
+    const title = document.createElement('div');
+    title.className = 'anat-detail-title';
+    const closeX = document.createElement('button');
+    closeX.className = 'adv-preset-modal-close';
+    closeX.type = 'button';
+    closeX.textContent = '✕';
+    closeX.setAttribute('aria-label', 'Close');
+    closeX.addEventListener('click', () => close());
+    header.appendChild(title); header.appendChild(closeX);
+    const body = document.createElement('div');
+    body.className = 'anat-detail-body';
+    modal.appendChild(header); modal.appendChild(body);
+    overlay.appendChild(modal);
+    document.body.appendChild(overlay);
+    overlay.addEventListener('click', e => { if (e.target === overlay) close(); });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') overlay.classList.remove('open'); });
+
+    function close() { overlay.classList.remove('open'); anatClearDetailVisualEls(); }
+
+    function makeRow(id, isRoot) {
+      const row = document.createElement('div');
+      row.className = 'anat-detail-row' + (isRoot ? ' anat-detail-row-root' : '');
+      row.tabIndex = 0;
+      row.setAttribute('role', 'button');
+      const dot = document.createElement('span');
+      dot.className = 'anat-detail-dot';
+      const label = document.createElement('span');
+      label.className = 'anat-detail-label';
+      label.textContent = ANAT_NODES[id].label;
+      const badge = document.createElement('span');
+      badge.className = 'anat-badge';
+      row.appendChild(dot); row.appendChild(label); row.appendChild(badge);
+      const activate = () => { anatSetSelected(id); _anatEditor.open(id); };
+      row.addEventListener('click', activate);
+      row.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); activate(); } });
+      anatRegisterVisualEl(id, { kind:'detailRow', row, dot, badge, labelBase: anatBreadcrumb(id) });
+      return row;
+    }
+
+    function open(rootId) {
+      anatClearDetailVisualEls();
+      title.textContent = ANAT_NODES[rootId].label;
+      body.innerHTML = '';
+      body.appendChild(makeRow(rootId, true));
+      const flat = [];
+      (function walk(node) { (node.children || []).forEach(c => { flat.push(c.id); walk(c); }); })(ANAT_NODES[rootId]);
+      flat.forEach(cid => body.appendChild(makeRow(cid, false)));
+      [rootId, ...flat].forEach(anatRefreshVisualEl);
+      overlay.classList.add('open');
+      const first = body.querySelector('.anat-detail-row');
+      if (first) first.focus();
+    }
+    return { open, close };
+  })();
+
+  document.getElementById('anatViewListBtn')?.addEventListener('click', () => { anatSetViewMode('list'); try { markDirty(); } catch(e) {} });
+  document.getElementById('anatViewVisualBtn')?.addEventListener('click', () => { anatSetViewMode('visual'); try { markDirty(); } catch(e) {} });
+  document.getElementById('anatSideFrontBtn')?.addEventListener('click', () => { anatApplySide('front'); try { markDirty(); } catch(e) {} });
+  document.getElementById('anatSideBackBtn')?.addEventListener('click', () => { anatApplySide('back'); try { markDirty(); } catch(e) {} });
+  anatSetViewMode('list'); // page-load default; applyState() below restores the saved choice
 
   function collectState() {
     const state = { inputs:{}, dots:{}, advFlaws:{} };
@@ -8557,8 +9058,8 @@ window._advTip = _advTip; // expose globally for dice roller chips
     } catch(e) { state.loresheets=[]; }
     // ── Anatomy / Limb Status ──
     try {
-      state.anatomy = { parts: anatState, expanded: [...anatExpanded] };
-    } catch(e) { state.anatomy = { parts:{}, expanded:[] }; }
+      state.anatomy = { parts: anatState, expanded: [...anatExpanded], viewMode: anatViewMode, side: anatViewSide };
+    } catch(e) { state.anatomy = { parts:{}, expanded:[], viewMode:'list', side:'front' }; }
     // ── Portrait — included in export file, stored separately in localStorage ──
     try {
       const img = document.getElementById('portraitImg');
@@ -8636,6 +9137,9 @@ window._advTip = _advTip; // expose globally for dice roller chips
       anatState    = (state.anatomy && state.anatomy.parts)    ? state.anatomy.parts : {};
       anatExpanded = new Set((state.anatomy && state.anatomy.expanded) || []);
       renderAnatomyTree();
+      anatViewSide = (state.anatomy && state.anatomy.side) || 'front';
+      if (_anatVisualBuilt) { anatApplySide(anatViewSide); Object.keys(anatVisualEls).forEach(id => anatRefreshVisualEl(id)); }
+      anatSetViewMode((state.anatomy && state.anatomy.viewMode) || 'list');
     } catch(e) {}
     // ── Disciplines ──
     try {
