@@ -2756,6 +2756,10 @@
      practice, while keeping the same collapse animation. */
   #anatomyBody:not(.collapsed) { max-height: 4000px; }
 
+  /* Same headroom issue as anatomyBody above — the relationship map's canvas
+     plus toolbar plus legend comfortably exceeds the shared 400px cap. */
+  #relMapBody:not(.collapsed) { max-height: 4000px; }
+
   .anat-tree { padding: 6px 10px 12px; }
   .anat-node { position: relative; }
   .anat-children { margin-left: 18px; border-left: 0.5px solid var(--border); padding-left: 4px; }
@@ -4464,6 +4468,82 @@ window.addEventListener('DOMContentLoaded', () => {
         </button>
       </div>
     </div>
+
+    <!-- RELATIONSHIP MAP sub-section -->
+    <div class="tracker-sub-header bp-sub" id="relMapHeader" data-label="Relationship Map">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><circle cx="6" cy="7" r="2.5" stroke="currentColor" stroke-width="1.2"/><circle cx="18" cy="7" r="2.5" stroke="currentColor" stroke-width="1.2"/><circle cx="12" cy="18" r="2.5" stroke="currentColor" stroke-width="1.2"/><path d="M8.3 8.6L11 16M15.7 8.6L13 16M8.4 6.6H15.6" stroke="currentColor" stroke-width="1"/></svg>
+      Relationship Map
+      <span style="margin-left:8px;font-family:var(--font-body);font-size:10px;font-style:italic;opacity:0.6;font-weight:400;text-transform:none;letter-spacing:0;">Who they trust, fear, and everything between</span>
+      <span class="collapse-arrow">▾</span>
+    </div>
+    <div class="tracker-sub-body collapsed" id="relMapBody">
+      <div style="padding:10px 18px 16px;">
+
+        <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:10px;">
+          <input type="text" id="relMapNameInput" placeholder="Name..." style="flex:1;min-width:110px;max-width:180px;">
+          <select id="relMapTypeInput" style="max-width:150px;">
+            <option value="gray">Neutral</option>
+            <option value="pink">Touchstone</option>
+            <option value="coral">Rival / threat</option>
+            <option value="teal">Ally</option>
+            <option value="purple">Kindred</option>
+          </select>
+          <button type="button" id="relMapAddBtn" style="font-family:'Cinzel',serif;font-size:9px;letter-spacing:0.14em;text-transform:uppercase;color:var(--text-muted);background:transparent;border:0.5px solid var(--border-md);border-radius:2px;padding:4px 12px;cursor:pointer;transition:all 0.2s;display:flex;align-items:center;gap:4px;"
+            onmouseover="this.style.borderColor='var(--gold-border)';this.style.color='var(--text-gold)'"
+            onmouseout="if(!this.classList.contains('relmap-active')){this.style.borderColor='var(--border-md)';this.style.color='var(--text-muted)';}">
+            <span style="font-size:13px;line-height:1;">+</span> Add Person
+          </button>
+          <button type="button" id="relMapConnectBtn" style="font-family:'Cinzel',serif;font-size:9px;letter-spacing:0.14em;text-transform:uppercase;color:var(--text-muted);background:transparent;border:0.5px solid var(--border-md);border-radius:2px;padding:4px 12px;cursor:pointer;transition:all 0.2s;"
+            onmouseover="this.style.borderColor='var(--gold-border)';this.style.color='var(--text-gold)'"
+            onmouseout="if(!this.classList.contains('relmap-active')){this.style.borderColor='var(--border-md)';this.style.color='var(--text-muted)';}">
+            ⇄ Connect
+          </button>
+          <button type="button" id="relMapDeleteBtn" style="font-family:'Cinzel',serif;font-size:9px;letter-spacing:0.14em;text-transform:uppercase;color:var(--text-muted);background:transparent;border:0.5px solid var(--border-md);border-radius:2px;padding:4px 12px;cursor:pointer;transition:all 0.2s;"
+            onmouseover="this.style.borderColor='var(--gold-border)';this.style.color='var(--text-gold)'"
+            onmouseout="if(!this.classList.contains('relmap-active')){this.style.borderColor='var(--border-md)';this.style.color='var(--text-muted)';}">
+            ✕ Remove
+          </button>
+        </div>
+
+        <div id="relMapEdgeForm" style="display:none;gap:8px;align-items:center;margin-bottom:10px;padding:8px 10px;border:0.5px solid var(--border-red);border-radius:4px;background:var(--bg-raise);flex-wrap:wrap;">
+          <span id="relMapEdgeFormLabel" style="font-family:var(--font-body);font-size:12px;color:var(--text-secondary);"></span>
+          <select id="relMapEdgeTypeInput" style="max-width:160px;">
+            <option value="trust">Trust / ally</option>
+            <option value="rivalry">Rivalry / tension</option>
+            <option value="enmity">Enmity</option>
+            <option value="bond">Blood bond</option>
+            <option value="sire">Sire &#8594; childe</option>
+            <option value="touchstone">Touchstone bond</option>
+            <option value="secret">Hidden history</option>
+            <option value="other">Other</option>
+          </select>
+          <input type="text" id="relMapEdgeLabelInput" placeholder="Optional note..." style="flex:1;min-width:100px;">
+          <button type="button" id="relMapEdgeConfirmBtn" style="font-family:'Cinzel',serif;font-size:9px;letter-spacing:0.12em;text-transform:uppercase;color:var(--crimson);background:transparent;border:0.5px solid var(--border-red);border-radius:2px;padding:4px 10px;cursor:pointer;">Add</button>
+          <button type="button" id="relMapEdgeCancelBtn" style="font-family:'Cinzel',serif;font-size:9px;letter-spacing:0.12em;text-transform:uppercase;color:var(--text-muted);background:transparent;border:0.5px solid var(--border-md);border-radius:2px;padding:4px 10px;cursor:pointer;">Cancel</button>
+        </div>
+
+        <div id="relMapCanvasWrap" style="position:relative;border:0.5px solid var(--border-md);border-radius:4px;overflow:hidden;background:rgba(0,0,0,0.18);">
+          <svg id="relMapSvg" viewBox="0 0 640 380" style="width:100%;height:auto;display:block;touch-action:none;">
+            <defs>
+              <marker id="relMapArrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker>
+            </defs>
+            <g id="relMapEdgesGroup"></g>
+            <g id="relMapNodesGroup"></g>
+          </svg>
+          <div id="relMapEmpty" style="text-align:center;padding:22px 10px;font-family:var(--font-body);font-size:12px;font-style:italic;color:var(--text-muted);">No one added yet — type a name above and click "+ Add Person".</div>
+        </div>
+
+        <div style="display:flex;flex-wrap:wrap;gap:10px 16px;margin-top:8px;font-family:var(--font-body);font-size:11px;color:var(--text-muted);">
+          <span style="display:flex;align-items:center;gap:5px;"><svg width="18" height="7"><line x1="1" y1="3.5" x2="17" y2="3.5" stroke="#3fae86" stroke-width="1.5"/></svg>Trust / ally</span>
+          <span style="display:flex;align-items:center;gap:5px;"><svg width="18" height="7"><line x1="1" y1="3.5" x2="17" y2="3.5" stroke="var(--gold)" stroke-width="1.5" stroke-dasharray="4 3"/></svg>Rivalry</span>
+          <span style="display:flex;align-items:center;gap:5px;"><svg width="18" height="7"><line x1="1" y1="3.5" x2="17" y2="3.5" stroke="var(--blood)" stroke-width="2.5"/></svg>Enmity</span>
+          <span style="display:flex;align-items:center;gap:5px;"><svg width="18" height="7"><line x1="1" y1="3.5" x2="17" y2="3.5" stroke="#8b7fe0" stroke-width="2.5"/></svg>Blood bond</span>
+          <span style="display:flex;align-items:center;gap:5px;"><svg width="18" height="7"><line x1="1" y1="3.5" x2="17" y2="3.5" stroke="var(--text-muted)" stroke-width="1.5"/></svg>Sire &#8594; childe</span>
+          <span style="display:flex;align-items:center;gap:5px;"><svg width="18" height="7"><line x1="1" y1="3.5" x2="17" y2="3.5" stroke="#d4547e" stroke-width="2"/></svg>Touchstone bond</span>
+        </div>
+        <p style="font-family:var(--font-body);font-size:11px;font-style:italic;color:var(--text-muted);margin:8px 0 0;">Drag a person to reposition them. Click "Connect", then two people, to define how they relate. Click "Remove", then a person or line, to delete it.</p>
+      </div>
+    </div>
   </div>
 
   <!-- NOTES -->
@@ -4982,6 +5062,7 @@ window.DISC_DATA = DISC_DATA;
     ['convictionsHeader', 'convictionsBody'],
     ['tenetsHeader',      'tenetsBody'],
     ['coterieTenetsHeader', 'coterieTenetsBody'],
+    ['relMapHeader',        'relMapBody'],
     ['languagesHeader',   'languagesBody'],
     ['anatomyHeader',     'anatomyBody'],
   ].forEach(([hid, bid]) => {
@@ -5431,6 +5512,248 @@ window.DISC_DATA = DISC_DATA;
 
   makeCoterieTenetRow(); makeCoterieTenetRow(); makeCoterieTenetRow();
 
+  // ── RELATIONSHIP MAP ──
+  // Purely manual — nodes and connections are typed in by the player, never
+  // pulled automatically from the roster or the Touchstones list, so it
+  // stays useful for NPCs, rivals, and anyone else who isn't a full sheet.
+  let relMapNodes = [];   // {id, name, type, x, y}
+  let relMapEdges = [];   // {id, a, b, type, label}
+  let relMapNodeSeq = 1, relMapEdgeSeq = 1;
+  let relMapConnectMode = false, relMapDeleteMode = false;
+  let relMapConnectFirst = null, relMapFocus = null;
+  let relMapPendingEdge = null; // {a,b} awaiting type/label confirmation
+
+  const REL_MAP_EDGE_TYPES = {
+    trust:      { label: 'Trust / ally',      color: '#3fae86', width: 1.5, dash: null,    arrow: false },
+    rivalry:    { label: 'Rivalry / tension',  color: 'var(--gold)', width: 1.5, dash: '4 3', arrow: false },
+    enmity:     { label: 'Enmity',             color: 'var(--blood)', width: 2.5, dash: null, arrow: false },
+    bond:       { label: 'Blood bond',         color: '#8b7fe0', width: 2.5, dash: null,    arrow: true  },
+    sire:       { label: 'Sire \u2192 childe', color: 'var(--text-muted)', width: 1.5, dash: null, arrow: true },
+    touchstone: { label: 'Touchstone bond',    color: '#d4547e', width: 2,   dash: null,    arrow: false },
+    secret:     { label: 'Hidden history',     color: 'var(--border-md)', width: 1, dash: '3 3', arrow: false },
+    other:      { label: 'Other',              color: 'var(--text-muted)', width: 1, dash: '2 2', arrow: false },
+  };
+  const REL_MAP_NODE_TYPES = {
+    gray:   { label: 'Neutral',        stroke: 'var(--border-md)' },
+    pink:   { label: 'Touchstone',     stroke: '#d4547e' },
+    coral:  { label: 'Rival / threat', stroke: '#d85a30' },
+    teal:   { label: 'Ally',           stroke: '#3fae86' },
+    purple: { label: 'Kindred',        stroke: '#8b7fe0' },
+  };
+
+  const relMapSvg      = document.getElementById('relMapSvg');
+  const relMapEdgesG   = document.getElementById('relMapEdgesGroup');
+  const relMapNodesG   = document.getElementById('relMapNodesGroup');
+  const relMapEmptyEl  = document.getElementById('relMapEmpty');
+  const relMapNameIn   = document.getElementById('relMapNameInput');
+  const relMapTypeIn   = document.getElementById('relMapTypeInput');
+  const relMapAddBtn   = document.getElementById('relMapAddBtn');
+  const relMapConnBtn  = document.getElementById('relMapConnectBtn');
+  const relMapDelBtn   = document.getElementById('relMapDeleteBtn');
+  const relMapForm     = document.getElementById('relMapEdgeForm');
+  const relMapFormLbl  = document.getElementById('relMapEdgeFormLabel');
+  const relMapEdgeType = document.getElementById('relMapEdgeTypeInput');
+  const relMapEdgeNote = document.getElementById('relMapEdgeLabelInput');
+
+  function relMapSvgPoint(clientX, clientY) {
+    const pt = relMapSvg.createSVGPoint();
+    pt.x = clientX; pt.y = clientY;
+    return pt.matrixTransform(relMapSvg.getScreenCTM().inverse());
+  }
+
+  function relMapTrim(n1, n2) {
+    const dx = n2.x - n1.x, dy = n2.y - n1.y, dist = Math.sqrt(dx*dx + dy*dy) || 1;
+    const ux = dx / dist, uy = dy / dist;
+    return { x1: n1.x + ux*36, y1: n1.y + uy*36, x2: n2.x - ux*36, y2: n2.y - uy*36 };
+  }
+
+  function relMapRender() {
+    relMapEmptyEl.style.display = relMapNodes.length ? 'none' : 'block';
+    relMapEdgesG.innerHTML = '';
+    relMapNodesG.innerHTML = '';
+
+    relMapEdges.forEach(edge => {
+      const a = relMapNodes.find(n => n.id === edge.a);
+      const b = relMapNodes.find(n => n.id === edge.b);
+      if (!a || !b) return;
+      const t = relMapTrim(a, b);
+      const def = REL_MAP_EDGE_TYPES[edge.type] || REL_MAP_EDGE_TYPES.other;
+      const hit = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+      hit.setAttribute('x1', t.x1); hit.setAttribute('y1', t.y1);
+      hit.setAttribute('x2', t.x2); hit.setAttribute('y2', t.y2);
+      hit.setAttribute('stroke', 'transparent'); hit.setAttribute('stroke-width', '14');
+      hit.style.cursor = 'pointer';
+      hit.addEventListener('click', ev => { ev.stopPropagation(); relMapEdgeClicked(edge.id); });
+      const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+      line.setAttribute('x1', t.x1); line.setAttribute('y1', t.y1);
+      line.setAttribute('x2', t.x2); line.setAttribute('y2', t.y2);
+      line.setAttribute('stroke', def.color);
+      line.setAttribute('stroke-width', def.width);
+      if (def.dash) line.setAttribute('stroke-dasharray', def.dash);
+      if (def.arrow) line.setAttribute('marker-end', 'url(#relMapArrow)');
+      line.style.opacity = (!relMapFocus || edge.a === relMapFocus || edge.b === relMapFocus) ? '1' : '0.15';
+      line.style.pointerEvents = 'none';
+      relMapEdgesG.appendChild(hit);
+      relMapEdgesG.appendChild(line);
+    });
+
+    relMapNodes.forEach(node => {
+      const def = REL_MAP_NODE_TYPES[node.type] || REL_MAP_NODE_TYPES.gray;
+      const connected = relMapFocus && relMapEdges.some(e =>
+        (e.a === node.id && e.b === relMapFocus) || (e.b === node.id && e.a === relMapFocus));
+      const dim = relMapFocus && node.id !== relMapFocus && !connected;
+      const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+      g.style.cursor = 'grab';
+      g.style.opacity = dim ? '0.35' : '1';
+      const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+      circle.setAttribute('cx', node.x); circle.setAttribute('cy', node.y); circle.setAttribute('r', 36);
+      circle.setAttribute('fill', 'var(--bg-raise)');
+      circle.setAttribute('stroke', node.id === relMapConnectFirst ? 'var(--crimson)' : def.stroke);
+      circle.setAttribute('stroke-width', node.id === relMapConnectFirst ? 2 : 1.3);
+      const nameTxt = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      nameTxt.setAttribute('x', node.x); nameTxt.setAttribute('y', node.y - 4);
+      nameTxt.setAttribute('text-anchor', 'middle'); nameTxt.setAttribute('dominant-baseline', 'central');
+      nameTxt.setAttribute('font-family', "'EB Garamond', serif"); nameTxt.setAttribute('font-size', '13');
+      nameTxt.setAttribute('fill', 'var(--text-primary)');
+      nameTxt.textContent = node.name.length > 12 ? node.name.slice(0, 11) + '\u2026' : node.name;
+      const typeTxt = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      typeTxt.setAttribute('x', node.x); typeTxt.setAttribute('y', node.y + 12);
+      typeTxt.setAttribute('text-anchor', 'middle'); typeTxt.setAttribute('dominant-baseline', 'central');
+      typeTxt.setAttribute('font-family', "'EB Garamond', serif"); typeTxt.setAttribute('font-size', '10');
+      typeTxt.setAttribute('fill', 'var(--text-muted)');
+      typeTxt.textContent = def.label;
+      g.appendChild(circle); g.appendChild(nameTxt); g.appendChild(typeTxt);
+      g.addEventListener('pointerdown', ev => relMapDragStart(ev, node.id));
+      relMapNodesG.appendChild(g);
+    });
+  }
+
+  function relMapAddNode() {
+    const name = relMapNameIn.value.trim();
+    if (!name) { relMapNameIn.focus(); return; }
+    const count = relMapNodes.length;
+    const cols = 4;
+    const x = 90 + (count % cols) * 150;
+    const y = 80 + Math.floor(count / cols) * 110;
+    relMapNodes.push({ id: 'n' + (relMapNodeSeq++), name, type: relMapTypeIn.value, x, y });
+    relMapNameIn.value = '';
+    relMapRender(); markDirty();
+  }
+
+  function relMapSetMode(mode) {
+    // Only one interaction mode active at a time
+    relMapConnectMode = (mode === 'connect') ? !relMapConnectMode : false;
+    relMapDeleteMode  = (mode === 'delete')  ? !relMapDeleteMode  : false;
+    relMapConnectFirst = null;
+    relMapCancelEdgeForm();
+    relMapConnBtn.classList.toggle('relmap-active', relMapConnectMode);
+    relMapConnBtn.style.borderColor = relMapConnectMode ? 'var(--crimson)' : 'var(--border-md)';
+    relMapConnBtn.style.color       = relMapConnectMode ? 'var(--crimson)' : 'var(--text-muted)';
+    relMapDelBtn.classList.toggle('relmap-active', relMapDeleteMode);
+    relMapDelBtn.style.borderColor = relMapDeleteMode ? 'var(--crimson)' : 'var(--border-md)';
+    relMapDelBtn.style.color       = relMapDeleteMode ? 'var(--crimson)' : 'var(--text-muted)';
+    relMapRender();
+  }
+
+  function relMapNodeClicked(id) {
+    if (relMapDeleteMode) {
+      relMapNodes = relMapNodes.filter(n => n.id !== id);
+      relMapEdges = relMapEdges.filter(e => e.a !== id && e.b !== id);
+      relMapRender(); markDirty(); return;
+    }
+    if (relMapConnectMode) {
+      if (!relMapConnectFirst) { relMapConnectFirst = id; relMapRender(); return; }
+      if (relMapConnectFirst === id) { relMapConnectFirst = null; relMapRender(); return; }
+      relMapOpenEdgeForm(relMapConnectFirst, id);
+      return;
+    }
+    relMapFocus = (relMapFocus === id) ? null : id;
+    relMapRender();
+  }
+
+  function relMapEdgeClicked(edgeId) {
+    if (relMapDeleteMode) {
+      relMapEdges = relMapEdges.filter(e => e.id !== edgeId);
+      relMapRender(); markDirty(); return;
+    }
+    const edge = relMapEdges.find(e => e.id === edgeId);
+    if (edge) {
+      const def = REL_MAP_EDGE_TYPES[edge.type] || REL_MAP_EDGE_TYPES.other;
+      try { showToast((edge.label ? edge.label + ' \u2014 ' : '') + def.label); } catch(e) {}
+    }
+  }
+
+  function relMapOpenEdgeForm(aId, bId) {
+    const a = relMapNodes.find(n => n.id === aId), b = relMapNodes.find(n => n.id === bId);
+    if (!a || !b) return;
+    relMapPendingEdge = { a: aId, b: bId };
+    relMapFormLbl.textContent = a.name + ' \u2194 ' + b.name;
+    relMapEdgeType.selectedIndex = 0;
+    relMapEdgeNote.value = '';
+    relMapForm.style.display = 'flex';
+  }
+  function relMapCancelEdgeForm() {
+    relMapPendingEdge = null;
+    relMapForm.style.display = 'none';
+    relMapConnectFirst = null;
+  }
+  function relMapConfirmEdgeForm() {
+    if (!relMapPendingEdge) return;
+    relMapEdges.push({
+      id: 'e' + (relMapEdgeSeq++),
+      a: relMapPendingEdge.a, b: relMapPendingEdge.b,
+      type: relMapEdgeType.value, label: relMapEdgeNote.value.trim()
+    });
+    relMapCancelEdgeForm();
+    relMapRender(); markDirty();
+  }
+
+  let relMapDragId = null, relMapDragMoved = false;
+  function relMapDragStart(ev, id) {
+    ev.preventDefault();
+    relMapDragId = id; relMapDragMoved = false;
+  }
+  relMapSvg.addEventListener('pointermove', ev => {
+    if (!relMapDragId) return;
+    const p = relMapSvgPoint(ev.clientX, ev.clientY);
+    const node = relMapNodes.find(n => n.id === relMapDragId);
+    if (!node) return;
+    node.x = Math.max(36, Math.min(604, p.x));
+    node.y = Math.max(36, Math.min(344, p.y));
+    relMapDragMoved = true;
+    relMapRender();
+  });
+  function relMapDragEnd() {
+    if (relMapDragId && !relMapDragMoved) relMapNodeClicked(relMapDragId);
+    else if (relMapDragId) markDirty();
+    relMapDragId = null;
+  }
+  relMapSvg.addEventListener('pointerup', relMapDragEnd);
+  relMapSvg.addEventListener('pointerleave', relMapDragEnd);
+
+  relMapAddBtn.addEventListener('click', relMapAddNode);
+  relMapNameIn.addEventListener('keydown', e => { if (e.key === 'Enter') relMapAddNode(); });
+  relMapConnBtn.addEventListener('click', () => relMapSetMode('connect'));
+  relMapDelBtn.addEventListener('click', () => relMapSetMode('delete'));
+  document.getElementById('relMapEdgeConfirmBtn').addEventListener('click', relMapConfirmEdgeForm);
+  document.getElementById('relMapEdgeCancelBtn').addEventListener('click', relMapCancelEdgeForm);
+
+  function relMapGetState() { return { nodes: relMapNodes, edges: relMapEdges, nodeSeq: relMapNodeSeq, edgeSeq: relMapEdgeSeq }; }
+  function relMapSetState(s) {
+    relMapNodes = (s && Array.isArray(s.nodes)) ? s.nodes : [];
+    relMapEdges = (s && Array.isArray(s.edges)) ? s.edges : [];
+    relMapNodeSeq = (s && s.nodeSeq) ? s.nodeSeq : (relMapNodes.length + 1);
+    relMapEdgeSeq = (s && s.edgeSeq) ? s.edgeSeq : (relMapEdges.length + 1);
+    relMapFocus = null; relMapConnectFirst = null;
+    relMapSetMode(null);
+  }
+  function relMapClear() { relMapSetState(null); }
+  window.relMapGetState = relMapGetState;
+  window.relMapSetState = relMapSetState;
+  window.relMapClear    = relMapClear;
+
+  relMapRender();
+
   // Defaults
   makeTouchstoneRow(); makeTouchstoneRow(); makeTouchstoneRow();
   makeConvictionRow(); makeConvictionRow(); makeConvictionRow();
@@ -5672,11 +5995,23 @@ window.DISC_DATA = DISC_DATA;
     localStorage.setItem('vtm_portrait', src);
   }
 
+  // Without this, a newly-uploaded or newly-removed portrait only reached the
+  // active roster character's saved data (and therefore JSON exports) once
+  // some *other* field happened to be edited afterward — otherwise it just
+  // sat in the on-screen image and localStorage, never persisted or exported.
+  // Kept out of setPortrait() itself so restoring the saved portrait on page
+  // load doesn't falsely flag the sheet as having unsaved changes.
+  function notifyPortraitChanged() {
+    try { markDirty(); } catch(e) {}
+    try { if (typeof window.syncActiveRosterCharacter === 'function') window.syncActiveRosterCharacter(); } catch(e) {}
+  }
+
   function clearPortrait() {
     portraitImg.src = '';
     portraitImg.style.display = 'none';
     portraitPH.style.display  = 'flex';
     localStorage.removeItem('vtm_portrait');
+    notifyPortraitChanged();
   }
 
   const savedPortrait = localStorage.getItem('vtm_portrait');
@@ -5710,6 +6045,7 @@ window.DISC_DATA = DISC_DATA;
         ctx.drawImage(img, 0, 0, w, h);
         const compressed = canvas.toDataURL('image/jpeg', QUALITY);
         setPortrait(compressed);
+        notifyPortraitChanged();
         const kb = Math.round(compressed.length * 0.75 / 1024);
         showToast(`Portrait saved — ${kb}KB ✦`);
       };
@@ -9192,6 +9528,7 @@ window._advTip = _advTip; // expose globally for dice roller chips
     try { state.convictions2  = [...convictionRows.children].map(r=>({text:r.querySelector('input')?.value||''})); } catch(e) { state.convictions2=[]; }
     try { state.tenets        = [...tenetRows.children].map(r=>({text:r.querySelector('input')?.value||''})); } catch(e) { state.tenets=[]; }
     try { state.coterieTenets = [...coterieTenetRows.children].map(r=>({text:r.querySelector('input')?.value||''})); } catch(e) { state.coterieTenets=[]; }
+    try { state.relMap = (window.relMapGetState || relMapGetState)(); } catch(e) { state.relMap = { nodes:[], edges:[] }; }
     // ── Specialties ──
     try {
       state.specs = {};
@@ -9351,6 +9688,7 @@ window._advTip = _advTip; // expose globally for dice roller chips
     } catch(e) {}
     // ── Touchstones ──
     try { if (state.touchstones)   { touchstoneRows.innerHTML='';   state.touchstones.forEach(t=>makeTouchstoneRow(t)); } } catch(e) {}
+    try { (window.relMapSetState || relMapSetState)(state.relMap); } catch(e) {}
     try { if (state.equipment)     { equipmentRows.innerHTML='';    state.equipment.forEach(it=>makeEquipmentRow(it)); } } catch(e) {}
     // ── Convictions / Tenets / Coterie ──
     try { if (state.convictions2)  { convictionRows.innerHTML='';   state.convictions2.forEach(c=>makeConvictionRow(c)); } } catch(e) {}
@@ -9994,6 +10332,7 @@ window._advTip = _advTip; // expose globally for dice roller chips
       coterieTenetRows.innerHTML = '';
       makeCoterieTenetRow({text:''});
       equipmentRows.innerHTML = '';
+      try { (window.relMapClear || relMapClear)(); } catch(e) {}
 
       ['phys','social','mental'].forEach(id => {
         const el = document.getElementById('spec-'+id);
@@ -16657,9 +16996,11 @@ setTimeout(scheduleDrips, 1000);
   function syncActiveCharacterData() {
     if (activeIdx < 0 || activeIdx >= characters.length) return;
     try {
-      const prevPortrait = characters[activeIdx].data?.portrait || '';
+      // collectState() already reads the live portrait image (compressed at
+      // upload time), so it must be kept as-is here — previously this was
+      // overwritten with the character's last-saved portrait, which silently
+      // discarded any newly-uploaded or newly-removed portrait forever.
       const liveState = (window.collectState || collectState)();
-      liveState.portrait = prevPortrait;
       characters[activeIdx].data = liveState;
       saveRoster();
     } catch(e) { console.warn('Roster live-sync error', e); }
@@ -16730,14 +17071,13 @@ setTimeout(scheduleDrips, 1000);
     // the same character again reloaded stale data. Before switching away
     // from whichever character is currently live on the sheet, capture its
     // current state (not the import-time snapshot) so those edits aren't
-    // discarded. Keep the roster's existing (already-compressed) portrait
-    // rather than re-capturing the live one, to avoid ballooning localStorage
-    // on every edit.
+    // discarded. The portrait is already compressed at upload time (see
+    // setPortrait()), so collectState()'s live portrait is safe to keep as-is —
+    // discarding it here in favour of the last-saved one silently erased any
+    // newly-uploaded or newly-removed portrait.
     if (activeIdx >= 0 && activeIdx < characters.length && activeIdx !== idx) {
       try {
-        const prevPortrait = characters[activeIdx].data?.portrait || '';
         const liveState = (window.collectState || collectState)();
-        liveState.portrait = prevPortrait;
         characters[activeIdx].data = liveState;
       } catch(e) { console.warn('Roster sync-on-switch error', e); }
     }
