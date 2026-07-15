@@ -43,6 +43,16 @@
 
     --shadow-card: 0 2px 8px rgba(0,0,0,0.5), 0 0 0 0.5px rgba(139,0,0,0.18);
     --shadow-lift: 0 8px 32px rgba(0,0,0,0.7), 0 0 0 0.5px rgba(139,0,0,0.3);
+
+    /* Anatomy tracker status colors — same 5 severities everywhere (list
+       rows, silhouette, detail panels), but darkened/re-saturated under
+       body.parchment below so they stay legible against a light page
+       instead of washing out (yellow-on-tan was the worst offender). */
+    --anat-c0: #5cb85c; /* Healthy */
+    --anat-c1: #d4c04a; /* Superficial */
+    --anat-c2: #e08a3c; /* Aggravated */
+    --anat-c3: #d4304a; /* Crippled */
+    --anat-c4: #7a7a82; /* Missing */
   }
 
   html { scroll-behavior: smooth; }
@@ -2057,6 +2067,14 @@
     --text-gold:      #6b4e18;
     --shadow-card:    0 2px 10px rgba(70,45,15,0.18), 0 0 0 0.5px rgba(122,21,21,0.08);
     --shadow-lift:    0 8px 32px rgba(70,45,15,0.22), 0 0 0 0.5px rgba(122,21,21,0.14);
+
+    /* Darkened/re-saturated so they stay legible on a light page —
+       straight gothic hues (esp. the superficial yellow) wash out here. */
+    --anat-c0: #2d6e2d;
+    --anat-c1: #8a6a10;
+    --anat-c2: #a3531c;
+    --anat-c3: #8b1a2a;
+    --anat-c4: #5a5460;
     background: var(--bg-deep);
     color: var(--text-primary);
     transition: background 0.4s, color 0.4s;
@@ -2837,10 +2855,15 @@
   .anat-cond-chip.active {
     background: rgba(196,30,58,0.18); border-color: rgba(196,30,58,0.55); color: #ff8a9a;
   }
+  body.parchment .anat-cond-chip.active {
+    background: rgba(139,26,42,0.16); border-color: rgba(139,26,42,0.5); color: #7a1010;
+  }
   .anat-cond-chip.healthy-btn {
     border-color: rgba(90,180,90,0.4); color: #7fca7f;
   }
   .anat-cond-chip.healthy-btn:hover { background: rgba(90,180,90,0.12); }
+  body.parchment .anat-cond-chip.healthy-btn { border-color: rgba(45,110,45,0.45); color: #1f5c1f; }
+  body.parchment .anat-cond-chip.healthy-btn:hover { background: rgba(45,110,45,0.12); }
 
   .anat-notes-area textarea {
     width: 100%; min-height: 64px; resize: vertical;
@@ -2873,6 +2896,7 @@
   }
   .anat-view-btn:hover { border-color: var(--gold-border); color: var(--text-gold); }
   .anat-view-btn.active { background: rgba(196,30,58,0.16); border-color: rgba(196,30,58,0.5); color: #ff8a9a; }
+  body.parchment .anat-view-btn.active { background: rgba(139,26,42,0.14); border-color: rgba(139,26,42,0.5); color: #7a1010; }
   .anat-view-btn:focus-visible { outline: 1.5px solid var(--crimson); outline-offset: 2px; }
 
   .anat-legend { align-items: center; }
@@ -2900,7 +2924,7 @@
 
   .anat-svg-region {
     cursor: pointer; transition: filter 0.15s, stroke-width 0.15s, opacity 0.15s;
-    stroke: rgba(255,255,255,0.28); stroke-width: 1;
+    stroke: var(--border-md); stroke-width: 1;
   }
   .anat-svg-region:hover { filter: brightness(1.25); }
   .anat-svg-region:focus-visible { outline: none; stroke: var(--crimson); stroke-width: 2.5; }
@@ -2908,6 +2932,7 @@
     stroke: var(--crimson); stroke-width: 2.5;
     filter: drop-shadow(0 0 5px rgba(212,32,64,0.85));
   }
+  body.parchment .anat-svg-region.anat-selected { filter: drop-shadow(0 0 5px rgba(139,26,42,0.75)); }
   .anat-svg-glyph {
     font-family: 'Cinzel', serif; font-weight: 700; pointer-events: none;
     text-anchor: middle; dominant-baseline: central; fill: rgba(10,5,8,0.75);
@@ -2918,7 +2943,7 @@
   }
   .anat-svg-watermark {
     font-family: 'Cinzel Decorative','Cinzel',serif; font-size: 10px; letter-spacing: 0.28em;
-    pointer-events: none; fill: rgba(201,168,90,0.4); text-transform: uppercase;
+    pointer-events: none; fill: var(--text-gold); opacity: 0.5; text-transform: uppercase;
   }
   .anat-svg-decor { pointer-events: none; }
 
@@ -3152,25 +3177,25 @@
             <span class="field-label">Predator Type</span>
             <select id="charPredatorType">
               <option value="">— Predator —</option>
-              <option>Alleycat</option>
-              <option>Bagger</option>
-              <option>Blood Leech</option>
-              <option>Cleaver</option>
-              <option>Consensualist</option>
-              <option>Farmer</option>
-              <option>Osiris</option>
-              <option>Sandman</option>
-              <option>Scene Queen</option>
-              <option>Siren</option>
-              <option>Extortionist</option>
-              <option>Graverobber</option>
-              <option>Roadside Killer</option>
-              <option>Grim Reaper</option>
-              <option>Montero</option>
-              <option>Pursuer</option>
-              <option>Trapdoor</option>
-              <option>Tithe Collector</option>
-              <option>Not Applicable</option>
+              <option title="Hunts through direct, often violent confrontation — cornering or overpowering prey by force in the dark.">Alleycat</option>
+              <option title="Feeds from stored blood — hospitals, blood banks, blood bags — avoiding live prey and violence.">Bagger</option>
+              <option title="Preys on other vampires, drinking Kindred vitae instead of mortal blood — a dangerous, hungry path.">Blood Leech</option>
+              <option title="Feeds from within their own social circle — friends, family, partners — Dominating them into secrecy.">Cleaver</option>
+              <option title="Only feeds with explicit consent, cultivating willing donors under a strict personal code.">Consensualist</option>
+              <option title="Feeds exclusively on animals, refusing human blood, at the cost of a slower-fading Hunger.">Farmer</option>
+              <option title="Feeds on followers and worshippers, cultivating a cult of personality or genuine devotion.">Osiris</option>
+              <option title="Slips into homes at night to feed on sleeping victims before disappearing unnoticed.">Sandman</option>
+              <option title="Feeds within a specific subculture or social scene, using charisma and status to draw in prey.">Scene Queen</option>
+              <option title="Seduces victims for blood, using charm and allure — sometimes supernatural — to lure prey close.">Siren</option>
+              <option title="Preys on the guilty and criminal, using intimidation or blackmail to feed while staying hidden.">Extortionist</option>
+              <option title="Feeds on the dying, comatose, or recently dead, haunting hospitals, morgues, and funerals.">Graverobber</option>
+              <option title="Hunts transient victims — hitchhikers, drifters, travelers — leaving little trace behind.">Roadside Killer</option>
+              <option title="Haunts hospices and disaster sites, feeding on the dying and terminal under a guise of comfort.">Grim Reaper</option>
+              <option title="Leads a small pack of mortal or vampire allies to run down and corner prey together.">Montero</option>
+              <option title="Meticulously stalks a single chosen target over time before cornering them for the kill.">Pursuer</option>
+              <option title="Lures victims into a controlled location — a home, club, business — feeding on those who come.">Trapdoor</option>
+              <option title="Preys on subordinates or a domain's mortal population, treating feeding as a due they're owed.">Tithe Collector</option>
+              <option title="No predator type applies — too young, unformed, or not yet fallen into a consistent pattern.">Not Applicable</option>
             </select>
           </div>
         </div>
@@ -3410,6 +3435,51 @@
   <input type="text" id="charSireAge" placeholder="Your total age...">
  </div>
 </div>
+      <div class="field-group">
+        <div class="field">
+          <span class="field-label" style="display:flex;align-items:center;justify-content:space-between;">
+            Appearance
+            <button class="textarea-popout-btn note-popup-btn" data-target="charAppearance" data-label="Appearance" title="Open in popup">⤢</button>
+          </span>
+          <textarea id="charAppearance" placeholder="How they look — build, features, style, the impression they leave..."></textarea>
+        </div>
+        <div class="field">
+          <span class="field-label" style="display:flex;align-items:center;justify-content:space-between;">
+            Distinguishing Features
+            <button class="textarea-popout-btn note-popup-btn" data-target="charDistinguishingFeatures" data-label="Distinguishing Features" title="Open in popup">⤢</button>
+          </span>
+          <textarea id="charDistinguishingFeatures" placeholder="Scars, mannerisms, posture, anything that sets them apart..."></textarea>
+        </div>
+        <div class="field">
+          <span class="field-label" style="display:flex;align-items:center;justify-content:space-between;">
+            History
+            <button class="textarea-popout-btn note-popup-btn" data-target="charHistory" data-label="History" title="Open in popup">⤢</button>
+          </span>
+          <textarea id="charHistory" placeholder="Their life before and after the Embrace..."></textarea>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- EQUIPMENT / POSSESSIONS -->
+  <div class="card" id="equipmentCard">
+    <div class="card-header collapsible-header" id="equipmentHeader" data-target="equipmentBody">
+      <svg class="card-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M5 8h14l-1 12H6L5 8z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/><path d="M8 8V6a4 4 0 0 1 8 0v2" stroke="currentColor" stroke-width="1.2"/></svg>
+      Equipment / Possessions
+      <span class="collapse-arrow">▾</span>
+    </div>
+    <div class="collapsible-body" id="equipmentBody">
+      <div style="padding:14px 18px 16px;">
+        <div style="font-family:var(--font-title);font-size:12px;letter-spacing:0.18em;text-transform:uppercase;color:var(--blood);opacity:0.85;margin-bottom:8px;display:grid;grid-template-columns:1fr 1fr 60px 24px;gap:8px;padding:0 2px;border-bottom:0.5px solid var(--border-red);padding-bottom:6px;">
+          <span>Item</span><span>Notes</span><span>Dmg</span><span></span>
+        </div>
+        <div id="equipmentRows"></div>
+        <button onclick="addEquipmentRow()" style="margin:6px 0 4px;font-family:'Cinzel',serif;font-size:11px;letter-spacing:0.14em;text-transform:uppercase;color:var(--text-muted);background:transparent;border:0.5px solid var(--border-md);border-radius:2px;padding:4px 12px;cursor:pointer;transition:all 0.2s;display:flex;align-items:center;gap:4px;"
+          onmouseover="this.style.borderColor='var(--gold-border)';this.style.color='var(--text-gold)'"
+          onmouseout="this.style.borderColor='var(--border-md)';this.style.color='var(--text-muted)'">
+          <span style="font-size:15px;line-height:1;">+</span> Add Item
+        </button>
+      </div>
     </div>
   </div>
 
@@ -3558,11 +3628,11 @@
     </div>
     <div class="tracker-sub-body collapsed" id="anatomyBody">
       <div class="anat-legend">
-        <div class="anat-legend-item"><span class="anat-legend-dot" style="color:#5cb85c;background:#5cb85c;"></span>Healthy</div>
-        <div class="anat-legend-item"><span class="anat-legend-dot" style="color:#d4c04a;background:#d4c04a;"></span><span class="anat-legend-glyph" style="color:#d4c04a;">•</span>Superficial</div>
-        <div class="anat-legend-item"><span class="anat-legend-dot" style="color:#e08a3c;background:#e08a3c;"></span><span class="anat-legend-glyph" style="color:#e08a3c;">◆</span>Aggravated</div>
-        <div class="anat-legend-item"><span class="anat-legend-dot" style="color:#d4304a;background:#d4304a;"></span><span class="anat-legend-glyph" style="color:#d4304a;">✕</span>Crippled</div>
-        <div class="anat-legend-item"><span class="anat-legend-dot" style="color:#7a7a82;background:#7a7a82;"></span><span class="anat-legend-glyph" style="color:#7a7a82;">∅</span>Missing (crosshatch)</div>
+        <div class="anat-legend-item"><span class="anat-legend-dot" style="color:var(--anat-c0);background:var(--anat-c0);"></span>Healthy</div>
+        <div class="anat-legend-item"><span class="anat-legend-dot" style="color:var(--anat-c1);background:var(--anat-c1);"></span><span class="anat-legend-glyph" style="color:var(--anat-c1);">•</span>Superficial</div>
+        <div class="anat-legend-item"><span class="anat-legend-dot" style="color:var(--anat-c2);background:var(--anat-c2);"></span><span class="anat-legend-glyph" style="color:var(--anat-c2);">◆</span>Aggravated</div>
+        <div class="anat-legend-item"><span class="anat-legend-dot" style="color:var(--anat-c3);background:var(--anat-c3);"></span><span class="anat-legend-glyph" style="color:var(--anat-c3);">✕</span>Crippled</div>
+        <div class="anat-legend-item"><span class="anat-legend-dot" style="color:var(--anat-c4);background:var(--anat-c4);"></span><span class="anat-legend-glyph" style="color:var(--anat-c4);">∅</span>Missing (crosshatch)</div>
       </div>
 
       <div class="anat-view-switch" role="group" aria-label="Anatomy tracker view">
@@ -5256,6 +5326,41 @@ window.DISC_DATA = DISC_DATA;
 
   function addTouchstoneRow() { makeTouchstoneRow(null); }
 
+  // ── EQUIPMENT / POSSESSIONS ── (simple list: item, notes, optional damage bonus —
+  // V5 doesn't have a formal weight/slot inventory system, so this stays a plain list
+  // rather than trying to enforce mechanics the rules themselves don't define)
+  const equipmentRows = document.getElementById('equipmentRows');
+  function makeEquipmentRow(data) {
+    const row = document.createElement('div');
+    row.className = 'equipment-row';
+    row.style.cssText = 'display:grid;grid-template-columns:1fr 1fr 60px 24px;gap:8px;align-items:center;padding:6px 2px;border-bottom:0.5px solid var(--border);';
+
+    const nameInp = document.createElement('input');
+    nameInp.className = 'touchstone-input';
+    nameInp.placeholder = 'Item name...';
+    if (data?.name) nameInp.value = data.name;
+
+    const notesInp = document.createElement('input');
+    notesInp.className = 'touchstone-input';
+    notesInp.placeholder = 'Notes...';
+    if (data?.notes) notesInp.value = data.notes;
+
+    const dmgInp = document.createElement('input');
+    dmgInp.className = 'touchstone-input';
+    dmgInp.placeholder = '+1';
+    dmgInp.title = 'Damage bonus (weapons only)';
+    dmgInp.style.textAlign = 'center';
+    if (data?.dmg) dmgInp.value = data.dmg;
+
+    row.appendChild(nameInp);
+    row.appendChild(notesInp);
+    row.appendChild(dmgInp);
+    row.appendChild(makeRemoveBtn(row));
+
+    equipmentRows.appendChild(row);
+  }
+  function addEquipmentRow() { makeEquipmentRow(null); }
+
   // ── CONVICTIONS ── (personal moral rules, numbered)
   function makeConvictionRow(data) {
     const row = document.createElement('div');
@@ -5797,6 +5902,64 @@ window.DISC_DATA = DISC_DATA;
     sectSelect.addEventListener('mousedown', () => _sectTip.hide());
     sectSelect.addEventListener('focus', () => _sectTip.hide());
     sectSelect.addEventListener('change', () => _sectTip.hide());
+  }
+
+  // ── Predator Type hover tooltip — same pattern as clan/sect, no icon art ──
+  const PREDATOR_DATA = {
+    'Alleycat': 'Hunts through direct, often violent confrontation \u2014 cornering or overpowering prey by force in the dark.',
+    'Bagger': 'Feeds from stored blood \u2014 hospitals, blood banks, blood bags \u2014 avoiding live prey and violence entirely.',
+    'Blood Leech': 'Preys on other vampires, drinking Kindred vitae instead of mortal blood \u2014 a dangerous, hungry path.',
+    'Cleaver': 'Feeds from within their own social circle \u2014 friends, family, partners \u2014 Dominating them into secrecy.',
+    'Consensualist': 'Only feeds with explicit consent, cultivating willing donors under a strict personal code.',
+    'Farmer': 'Feeds exclusively on animals, refusing human blood, at the cost of a slower-fading Hunger.',
+    'Osiris': 'Feeds on followers and worshippers, cultivating a cult of personality or genuine devotion around themselves.',
+    'Sandman': 'Slips into homes at night to feed on sleeping victims before disappearing unnoticed.',
+    'Scene Queen': 'Feeds within a specific subculture or social scene, using charisma and status to draw in prey.',
+    'Siren': 'Seduces victims for blood, using charm and allure \u2014 sometimes supernatural \u2014 to lure prey close.',
+    'Extortionist': 'Preys on the guilty and criminal, using intimidation or blackmail to feed while staying hidden.',
+    'Graverobber': 'Feeds on the dying, comatose, or recently dead, haunting hospitals, morgues, and funerals.',
+    'Roadside Killer': 'Hunts transient victims \u2014 hitchhikers, drifters, travelers \u2014 leaving little trace behind.',
+    'Grim Reaper': 'Haunts hospices and disaster sites, feeding on the dying and terminal under a guise of comfort.',
+    'Montero': 'Leads a small pack of mortal or vampire allies to run down and corner prey together.',
+    'Pursuer': 'Meticulously stalks a single chosen target over time before cornering them for the kill.',
+    'Trapdoor': 'Lures victims into a controlled location \u2014 a home, club, business \u2014 feeding on those who come.',
+    'Tithe Collector': 'Preys on subordinates or a domain\u2019s mortal population, treating feeding as a due they\u2019re owed.',
+    'Not Applicable': 'No predator type applies \u2014 too young, unformed, or not yet fallen into a consistent pattern.',
+  };
+
+  const _predatorTip = (() => {
+    const el = document.createElement('div');
+    el.className = 'disc-tooltip clan-tooltip';
+    document.body.appendChild(el);
+
+    function show(type, x, y) {
+      const desc = PREDATOR_DATA[type];
+      if (!desc) return; // nothing selected yet, or no data for this value
+      el.innerHTML =
+        `<div class="dt-disc-header"><span class="dt-disc">${type}</span></div>` +
+        `<div class="dt-desc">${desc}</div>`;
+      position(x, y); el.classList.add('visible');
+    }
+    function position(x, y) {
+      const tw = 340;
+      let tx = x + 16; if (tx + tw > window.innerWidth - 4) tx = x - tw - 8;
+      let ty = y - 10; if (ty + 120 > window.innerHeight - 4) ty = window.innerHeight - 124;
+      if (ty < 4) ty = 4;
+      el.style.left = tx + 'px'; el.style.top = ty + 'px';
+    }
+    function move(x, y) { if (el.classList.contains('visible')) position(x, y); }
+    function hide() { el.classList.remove('visible'); }
+    return { show, move, hide };
+  })();
+
+  const predatorSelect = document.getElementById('charPredatorType');
+  if (predatorSelect) {
+    predatorSelect.addEventListener('mouseenter', e => _predatorTip.show(predatorSelect.value, e.clientX, e.clientY));
+    predatorSelect.addEventListener('mousemove', e => _predatorTip.move(e.clientX, e.clientY));
+    predatorSelect.addEventListener('mouseleave', () => _predatorTip.hide());
+    predatorSelect.addEventListener('mousedown', () => _predatorTip.hide());
+    predatorSelect.addEventListener('focus', () => _predatorTip.hide());
+    predatorSelect.addEventListener('change', () => _predatorTip.hide());
   }
 
   // ── DOTS ──
@@ -7651,6 +7814,10 @@ window._advTip = _advTip; // expose globally for dice roller chips
     localStorage.setItem('vtm_theme', parchment ? 'parchment' : 'gothic');
     try { updateClanIcon(clanSelect.value); } catch(e) {}
     try { updateSectIcon(sectSelect.value); } catch(e) {}
+    // SVG fills/strokes/decor already re-theme for free via CSS vars, but
+    // dot/badge colors are computed to a literal hex (can't alpha-suffix a
+    // var()) — repaint those explicitly so they don't wait for the next edit.
+    try { anatRepaintForTheme(); } catch(e) {}
   }
   window.applyTheme = applyTheme;
 
@@ -8175,6 +8342,19 @@ window._advTip = _advTip; // expose globally for dice roller chips
   ];
   const ANAT_RANK_INFO = ANAT_STATUSES.map(s => ({ label: s.label, color: s.color }));
 
+  // Literal-hex versions of the 5 status colors, matched to --anat-c0..4 in
+  // CSS. Needed anywhere we build a color string with a concatenated alpha
+  // suffix (e.g. color + '22' for a badge background) — that trick only
+  // works with a literal hex, not a var() reference, so those specific
+  // spots read the live theme here instead of relying on CSS cascade alone.
+  // Anything that doesn't need alpha-suffixing (fills, strokes) uses the
+  // var(--anat-cN) CSS token directly and gets theme changes for free.
+  const ANAT_STATUS_HEX_GOTHIC    = ['#5cb85c', '#d4c04a', '#e08a3c', '#d4304a', '#7a7a82'];
+  const ANAT_STATUS_HEX_PARCHMENT = ['#2d6e2d', '#8a6a10', '#a3531c', '#8b1a2a', '#5a5460'];
+  function anatStatusHex(rank) {
+    return document.body.classList.contains('parchment') ? ANAT_STATUS_HEX_PARCHMENT[rank] : ANAT_STATUS_HEX_GOTHIC[rank];
+  }
+
   function anatHand(id) {
     return { id, label:'Hand', children:[
       { id:id+'_thumb',  label:'Thumb' },
@@ -8370,13 +8550,15 @@ window._advTip = _advTip; // expose globally for dice roller chips
   function anatApplyRowVisuals(id) {
     const els = anatRowEls[id];
     if (!els) return;
-    const info = ANAT_RANK_INFO[anatAggRank(id)];
-    els.dot.style.color = info.color;
-    els.dot.style.background = info.color;
+    const rank = anatAggRank(id);
+    const info = ANAT_RANK_INFO[rank];
+    const color = anatStatusHex(rank);
+    els.dot.style.color = color;
+    els.dot.style.background = color;
     els.badge.textContent = info.label;
-    els.badge.style.color = info.color;
-    els.badge.style.background = info.color + '22';
-    els.badge.style.border = '0.5px solid ' + info.color + '55';
+    els.badge.style.color = color;
+    els.badge.style.background = color + '22';
+    els.badge.style.border = '0.5px solid ' + color + '55';
     if (els.row) els.row.setAttribute('aria-label', anatBreadcrumb(id) + ' — ' + info.label);
   }
   // Update this node's row plus every ancestor (aggregate severity bubbles up).
@@ -8618,12 +8800,13 @@ window._advTip = _advTip; // expose globally for dice roller chips
     if (!entries || !entries.length) return;
     const rank  = anatAggRank(id);
     const info  = ANAT_RANK_INFO[rank];
+    const color = anatStatusHex(rank);
     const glyph = ANAT_RANK_GLYPH[rank];
     entries.forEach(e => {
       if (e.kind === 'shape') {
         const fill = rank === 4 ? `url(#${e.patternId})` : `url(#anatGrad_${e.view}_${rank})`;
         e.el.setAttribute('fill', fill);
-        e.el.style.stroke = rank === 0 ? 'rgba(255,255,255,0.28)' : info.color;
+        e.el.style.stroke = rank === 0 ? 'var(--border-md)' : `var(--anat-c${rank})`;
         e.el.style.strokeDasharray = ANAT_RANK_DASH[rank];
         e.el.style.strokeWidth = rank >= 3 ? '2.25' : '1';
         e.el.setAttribute('aria-label', e.labelBase + ' — ' + info.label);
@@ -8632,17 +8815,28 @@ window._advTip = _advTip; // expose globally for dice roller chips
           e.glyphEl.style.fill = rank === 4 ? 'rgba(222,212,216,0.85)' : 'rgba(10,5,8,0.75)';
         }
       } else if (e.kind === 'detailRow') {
-        e.dot.style.color = info.color;
-        e.dot.style.background = info.color;
+        e.dot.style.color = color;
+        e.dot.style.background = color;
         e.badge.textContent = info.label;
-        e.badge.style.color = info.color;
-        e.badge.style.background = info.color + '22';
-        e.badge.style.border = '0.5px solid ' + info.color + '55';
+        e.badge.style.color = color;
+        e.badge.style.background = color + '22';
+        e.badge.style.border = '0.5px solid ' + color + '55';
         e.row.setAttribute('aria-label', e.labelBase + ' — ' + info.label);
       }
     });
   }
   window.anatRefreshVisualEl = anatRefreshVisualEl;
+
+  // Called from applyTheme() on every toggle. Function declaration (not
+  // const) so it's hoisted and safe to reference from applyTheme even at
+  // initial page load, before this module's own let/const bindings below
+  // have run — the try/catch around its call site in applyTheme() absorbs
+  // that specific startup case.
+  function anatRepaintForTheme() {
+    Object.keys(anatRowEls).forEach(anatApplyRowVisuals);
+    Object.keys(anatVisualEls).forEach(anatRefreshVisualEl);
+  }
+  window.anatRepaintForTheme = anatRepaintForTheme;
 
   function anatSetSelected(id) {
     anatVisualSelectedId = id;
@@ -8741,8 +8935,8 @@ window._advTip = _advTip; // expose globally for dice roller chips
       const edge = rank === 0 ? 0.24 : 0.66;
       return `<radialGradient id="anatGrad_${view}_${rank}" cx="32%" cy="26%" r="80%">` +
         `<stop offset="0%" stop-color="#fff" stop-opacity="${rank === 0 ? 0.08 : 0.26}"/>` +
-        `<stop offset="40%" stop-color="${s.color}" stop-opacity="${mid}"/>` +
-        `<stop offset="100%" stop-color="${s.color}" stop-opacity="${edge}"/>` +
+        `<stop offset="40%" style="stop-color:var(--anat-c${rank})" stop-opacity="${mid}"/>` +
+        `<stop offset="100%" style="stop-color:var(--anat-c${rank})" stop-opacity="${edge}"/>` +
         `</radialGradient>`;
     }).join('');
   }
@@ -8752,12 +8946,12 @@ window._advTip = _advTip; // expose globally for dice roller chips
   // via the toggle button label. Purely decorative — never clickable, never
   // part of the tracked data.
   function anatDecorativeMarkup(view) {
-    const g = `<g class="anat-svg-decor" pointer-events="none" fill="none" stroke="rgba(216,192,184,0.4)" stroke-width="1">`;
+    const g = `<g class="anat-svg-decor" pointer-events="none" fill="none" style="stroke:var(--text-secondary)" stroke-width="1" opacity="0.55">`;
     if (view === 'front') {
       return g +
         // Eyes, nose, closed mouth line
-        `<circle cx="109" cy="38" r="2" fill="rgba(216,192,184,0.5)" stroke="none"/>` +
-        `<circle cx="131" cy="38" r="2" fill="rgba(216,192,184,0.5)" stroke="none"/>` +
+        `<circle cx="109" cy="38" r="2" style="fill:var(--text-secondary)" stroke="none"/>` +
+        `<circle cx="131" cy="38" r="2" style="fill:var(--text-secondary)" stroke="none"/>` +
         `<path d="M120,44 L117,52 L120,54" stroke-width="1"/>` +
         `<path d="M112,60 Q120,63 128,60" stroke-width="1"/>` +
         // Collarbones sweeping from the neck base out to each shoulder
@@ -8765,14 +8959,14 @@ window._advTip = _advTip; // expose globally for dice roller chips
         `<path d="M127,90 Q160,93 191,99" stroke-width="1.1"/>` +
         // Sternum line + navel
         `<path d="M120,92 L120,148" stroke-width="1" stroke-dasharray="1 4" opacity="0.7"/>` +
-        `<circle cx="120" cy="184" r="1.6" fill="rgba(216,192,184,0.45)" stroke="none"/>` +
+        `<circle cx="120" cy="184" r="1.6" style="fill:var(--text-secondary)" stroke="none"/>` +
         `</g>`;
     }
     // BACK — hairline at the crown, a dashed spine with vertebra dots, and
     // faint shoulder-blade curves. No facial features, since we're looking
     // at the back of the head.
     const vertebrae = [102, 118, 134, 150, 166, 182, 198, 214, 230, 246, 262]
-      .map(y => `<circle cx="120" cy="${y}" r="1.2" fill="rgba(216,192,184,0.4)" stroke="none"/>`).join('');
+      .map(y => `<circle cx="120" cy="${y}" r="1.2" style="fill:var(--text-secondary)" stroke="none"/>`).join('');
     return g +
       `<path d="M98,20 Q120,6 142,20" stroke-width="1.1"/>` +
       `<path d="M102,26 Q120,15 138,26" stroke-width="0.8" opacity="0.7"/>` +
@@ -8987,6 +9181,13 @@ window._advTip = _advTip; // expose globally for dice roller chips
         status: row._getStatus ? row._getStatus() : 0
       }));
     } catch(e) { state.touchstones=[]; }
+    // ── Equipment / Possessions ──
+    try {
+      state.equipment = [...equipmentRows.querySelectorAll('.equipment-row')].map(row => {
+        const inputs = row.querySelectorAll('input');
+        return { name: inputs[0]?.value||'', notes: inputs[1]?.value||'', dmg: inputs[2]?.value||'' };
+      });
+    } catch(e) { state.equipment=[]; }
     // ── Convictions / Tenets / Coterie Tenets ──
     try { state.convictions2  = [...convictionRows.children].map(r=>({text:r.querySelector('input')?.value||''})); } catch(e) { state.convictions2=[]; }
     try { state.tenets        = [...tenetRows.children].map(r=>({text:r.querySelector('input')?.value||''})); } catch(e) { state.tenets=[]; }
@@ -9150,6 +9351,7 @@ window._advTip = _advTip; // expose globally for dice roller chips
     } catch(e) {}
     // ── Touchstones ──
     try { if (state.touchstones)   { touchstoneRows.innerHTML='';   state.touchstones.forEach(t=>makeTouchstoneRow(t)); } } catch(e) {}
+    try { if (state.equipment)     { equipmentRows.innerHTML='';    state.equipment.forEach(it=>makeEquipmentRow(it)); } } catch(e) {}
     // ── Convictions / Tenets / Coterie ──
     try { if (state.convictions2)  { convictionRows.innerHTML='';   state.convictions2.forEach(c=>makeConvictionRow(c)); } } catch(e) {}
     try { if (state.tenets)        { tenetRows.innerHTML='';        state.tenets.forEach(t=>makeTenetRow(t)); } } catch(e) {}
@@ -9791,6 +9993,7 @@ window._advTip = _advTip; // expose globally for dice roller chips
       makeTenetRow({text:''}); makeTenetRow({text:''}); makeTenetRow({text:''});
       coterieTenetRows.innerHTML = '';
       makeCoterieTenetRow({text:''});
+      equipmentRows.innerHTML = '';
 
       ['phys','social','mental'].forEach(id => {
         const el = document.getElementById('spec-'+id);
@@ -11539,7 +11742,64 @@ window._advTip = _advTip; // expose globally for dice roller chips
   <div id="text-editor-resize"></div>
 </div>
 
-<!-- NOTE POPUPS: coterie, domain, chronicle -->
+<!-- NOTE POPUPS: appearance, distinguishing features, history, coterie, domain, chronicle -->
+<div class="note-popup-window" id="popup-charAppearance">
+  <div class="note-popup-header">
+    <span class="note-popup-title">✦ Appearance</span>
+    <div style="display:flex;gap:5px;align-items:center;">
+      <button class="note-popup-tab active" data-mode="preview">Preview</button>
+      <button class="note-popup-tab" data-mode="edit">Edit</button>
+      <button class="win-collapse-btn note-popup-popin" style="display:none;" title="Pop back in to main window">⊙ Pop In</button>
+      <button class="win-collapse-btn note-popup-popout" title="Pop out to new window">⧉</button>
+      <button class="win-collapse-btn note-popup-collapse" title="Collapse">⊟</button>
+      <button class="note-popup-close" title="Close">✕</button>
+    </div>
+  </div>
+  <div class="note-popup-body">
+    <textarea class="note-popup-textarea" data-source="charAppearance"></textarea>
+    <div class="note-popup-preview"></div>
+  </div>
+  <div class="note-popup-resize"></div>
+</div>
+
+<div class="note-popup-window" id="popup-charDistinguishingFeatures">
+  <div class="note-popup-header">
+    <span class="note-popup-title">✦ Distinguishing Features</span>
+    <div style="display:flex;gap:5px;align-items:center;">
+      <button class="note-popup-tab active" data-mode="preview">Preview</button>
+      <button class="note-popup-tab" data-mode="edit">Edit</button>
+      <button class="win-collapse-btn note-popup-popin" style="display:none;" title="Pop back in to main window">⊙ Pop In</button>
+      <button class="win-collapse-btn note-popup-popout" title="Pop out to new window">⧉</button>
+      <button class="win-collapse-btn note-popup-collapse" title="Collapse">⊟</button>
+      <button class="note-popup-close" title="Close">✕</button>
+    </div>
+  </div>
+  <div class="note-popup-body">
+    <textarea class="note-popup-textarea" data-source="charDistinguishingFeatures"></textarea>
+    <div class="note-popup-preview"></div>
+  </div>
+  <div class="note-popup-resize"></div>
+</div>
+
+<div class="note-popup-window" id="popup-charHistory">
+  <div class="note-popup-header">
+    <span class="note-popup-title">✦ History</span>
+    <div style="display:flex;gap:5px;align-items:center;">
+      <button class="note-popup-tab active" data-mode="preview">Preview</button>
+      <button class="note-popup-tab" data-mode="edit">Edit</button>
+      <button class="win-collapse-btn note-popup-popin" style="display:none;" title="Pop back in to main window">⊙ Pop In</button>
+      <button class="win-collapse-btn note-popup-popout" title="Pop out to new window">⧉</button>
+      <button class="win-collapse-btn note-popup-collapse" title="Collapse">⊟</button>
+      <button class="note-popup-close" title="Close">✕</button>
+    </div>
+  </div>
+  <div class="note-popup-body">
+    <textarea class="note-popup-textarea" data-source="charHistory"></textarea>
+    <div class="note-popup-preview"></div>
+  </div>
+  <div class="note-popup-resize"></div>
+</div>
+
 <div class="note-popup-window" id="popup-coterieNotes">
   <div class="note-popup-header">
     <span class="note-popup-title">✦ Coterie Notes</span>
@@ -16604,8 +16864,8 @@ setTimeout(scheduleDrips, 1000);
   if (folders.length === 0) {
     localStorage.removeItem('vtm_dm_folders'); // clear stale empty entry
     folders = [
-      { id: 'folder_party', name: 'Party', collapsed: false },
-      { id: 'folder_npc',   name: 'NPCs',  collapsed: false },
+      { id: 'folder_party', name: 'Coterie', collapsed: false },
+      { id: 'folder_npc',   name: "SPC'S",  collapsed: false },
     ];
     saveRoster();
   }
@@ -16647,6 +16907,9 @@ setTimeout(scheduleDrips, 1000);
 (function() {
   // Stagger positions so windows don't stack exactly
   const offsets = {
+    'charAppearance':             { x: 60,  y: 60  },
+    'charDistinguishingFeatures': { x: 100, y: 90  },
+    'charHistory':                { x: 140, y: 120 },
     'coterieNotes':   { x: 80,  y: 80  },
     'domainNotes':    { x: 120, y: 110 },
     'chronicleNotes': { x: 160, y: 140 },
