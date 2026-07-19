@@ -4479,7 +4479,13 @@ window.addEventListener('DOMContentLoaded', () => {
     <div class="tracker-sub-body collapsed" id="relMapBody">
       <div style="padding:10px 18px 16px;">
 
-        <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:10px;">
+        <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:6px;">
+          <input type="file" id="relMapImageInput" accept="image/*" style="display:none;">
+          <button type="button" id="relMapImageBtn" title="Add a portrait for this person" style="flex:none;width:34px;height:34px;padding:0;border-radius:50%;border:0.5px dashed var(--border-md);background:var(--bg-raise);color:var(--text-muted);cursor:pointer;display:flex;align-items:center;justify-content:center;overflow:hidden;">
+            <svg id="relMapImageIcon" width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M4 7h3l1.5-2h7L17 7h3a1 1 0 0 1 1 1v11a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V8a1 1 0 0 1 1-1z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/><circle cx="12" cy="13" r="3.5" stroke="currentColor" stroke-width="1.2"/></svg>
+            <img id="relMapImagePreview" style="display:none;width:100%;height:100%;object-fit:cover;">
+          </button>
+          <button type="button" id="relMapImageClearBtn" title="Remove portrait" style="display:none;flex:none;font-family:'Cinzel',serif;font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-muted);background:transparent;border:0.5px solid var(--border-md);border-radius:2px;padding:4px 8px;cursor:pointer;">✕</button>
           <input type="text" id="relMapNameInput" placeholder="Name..." style="flex:1;min-width:110px;max-width:180px;">
           <select id="relMapTypeInput" style="max-width:150px;">
             <option value="gray">Neutral</option>
@@ -4491,7 +4497,7 @@ window.addEventListener('DOMContentLoaded', () => {
           <button type="button" id="relMapAddBtn" style="font-family:'Cinzel',serif;font-size:9px;letter-spacing:0.14em;text-transform:uppercase;color:var(--text-muted);background:transparent;border:0.5px solid var(--border-md);border-radius:2px;padding:4px 12px;cursor:pointer;transition:all 0.2s;display:flex;align-items:center;gap:4px;"
             onmouseover="this.style.borderColor='var(--gold-border)';this.style.color='var(--text-gold)'"
             onmouseout="if(!this.classList.contains('relmap-active')){this.style.borderColor='var(--border-md)';this.style.color='var(--text-muted)';}">
-            <span style="font-size:13px;line-height:1;">+</span> Add Person
+            <span id="relMapAddBtnIcon" style="font-size:13px;line-height:1;">+</span> <span id="relMapAddBtnLabel">Add Person</span>
           </button>
           <button type="button" id="relMapConnectBtn" style="font-family:'Cinzel',serif;font-size:9px;letter-spacing:0.14em;text-transform:uppercase;color:var(--text-muted);background:transparent;border:0.5px solid var(--border-md);border-radius:2px;padding:4px 12px;cursor:pointer;transition:all 0.2s;"
             onmouseover="this.style.borderColor='var(--gold-border)';this.style.color='var(--text-gold)'"
@@ -4503,6 +4509,11 @@ window.addEventListener('DOMContentLoaded', () => {
             onmouseout="if(!this.classList.contains('relmap-active')){this.style.borderColor='var(--border-md)';this.style.color='var(--text-muted)';}">
             ✕ Remove
           </button>
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:10px;">
+          <input type="text" id="relMapNotesInput" placeholder="Notes — who they are, what they know, why they matter..." style="flex:1;min-width:200px;">
+          <span id="relMapEditingLabel" style="display:none;font-family:var(--font-body);font-size:11px;font-style:italic;color:var(--text-gold);white-space:nowrap;">Editing <b id="relMapEditingName"></b></span>
+          <button type="button" id="relMapCancelEditBtn" style="display:none;font-family:'Cinzel',serif;font-size:9px;letter-spacing:0.12em;text-transform:uppercase;color:var(--text-muted);background:transparent;border:0.5px solid var(--border-md);border-radius:2px;padding:4px 10px;cursor:pointer;">Cancel Edit</button>
         </div>
 
         <div id="relMapEdgeForm" style="display:none;gap:8px;align-items:center;margin-bottom:10px;padding:8px 10px;border:0.5px solid var(--border-red);border-radius:4px;background:var(--bg-raise);flex-wrap:wrap;">
@@ -4522,16 +4533,23 @@ window.addEventListener('DOMContentLoaded', () => {
           <button type="button" id="relMapEdgeCancelBtn" style="font-family:'Cinzel',serif;font-size:9px;letter-spacing:0.12em;text-transform:uppercase;color:var(--text-muted);background:transparent;border:0.5px solid var(--border-md);border-radius:2px;padding:4px 10px;cursor:pointer;">Cancel</button>
         </div>
 
-        <div id="relMapCanvasWrap" style="position:relative;border:0.5px solid var(--border-md);border-radius:4px;overflow:hidden;background:rgba(0,0,0,0.18);">
+        <div id="relMapCanvasWrap" style="position:relative;border:0.5px solid var(--border-md);border-radius:4px;overflow:hidden;background:rgba(0,0,0,0.18);transition:border-color 0.2s;">
+          <div id="relMapModeBanner" style="display:none;align-items:center;justify-content:space-between;gap:8px;padding:7px 12px;background:var(--blood-dim, rgba(139,20,20,0.25));border-bottom:0.5px solid var(--border-red);">
+            <span id="relMapModeBannerText" style="font-family:var(--font-body);font-size:12px;color:var(--text-gold);"></span>
+            <button type="button" id="relMapModeDoneBtn" style="flex:none;font-family:'Cinzel',serif;font-size:9px;letter-spacing:0.12em;text-transform:uppercase;color:var(--text-gold);background:transparent;border:0.5px solid var(--gold-border);border-radius:2px;padding:3px 10px;cursor:pointer;">Done</button>
+          </div>
           <svg id="relMapSvg" viewBox="0 0 640 380" style="width:100%;height:auto;display:block;touch-action:none;">
             <defs>
               <marker id="relMapArrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker>
             </defs>
+            <defs id="relMapClipDefs"></defs>
             <g id="relMapEdgesGroup"></g>
             <g id="relMapNodesGroup"></g>
           </svg>
           <div id="relMapEmpty" style="text-align:center;padding:22px 10px;font-family:var(--font-body);font-size:12px;font-style:italic;color:var(--text-muted);">No one added yet — type a name above and click "+ Add Person".</div>
+          <div id="relMapTooltip" style="display:none;position:absolute;z-index:20;max-width:220px;padding:8px 10px;background:var(--bg-card);border:0.5px solid var(--border-red);border-radius:4px;font-family:var(--font-body);font-size:11px;line-height:1.45;color:var(--text-secondary);pointer-events:none;box-shadow:0 4px 14px rgba(0,0,0,0.5);"></div>
         </div>
+
 
         <div style="display:flex;flex-wrap:wrap;gap:10px 16px;margin-top:8px;font-family:var(--font-body);font-size:11px;color:var(--text-muted);">
           <span style="display:flex;align-items:center;gap:5px;"><svg width="18" height="7"><line x1="1" y1="3.5" x2="17" y2="3.5" stroke="#3fae86" stroke-width="1.5"/></svg>Trust / ally</span>
@@ -4541,7 +4559,7 @@ window.addEventListener('DOMContentLoaded', () => {
           <span style="display:flex;align-items:center;gap:5px;"><svg width="18" height="7"><line x1="1" y1="3.5" x2="17" y2="3.5" stroke="var(--text-muted)" stroke-width="1.5"/></svg>Sire &#8594; childe</span>
           <span style="display:flex;align-items:center;gap:5px;"><svg width="18" height="7"><line x1="1" y1="3.5" x2="17" y2="3.5" stroke="#d4547e" stroke-width="2"/></svg>Touchstone bond</span>
         </div>
-        <p style="font-family:var(--font-body);font-size:11px;font-style:italic;color:var(--text-muted);margin:8px 0 0;">Drag a person to reposition them. Click "Connect", then two people, to define how they relate. Click "Remove", then a person or line, to delete it.</p>
+        <p style="font-family:var(--font-body);font-size:11px;font-style:italic;color:var(--text-muted);margin:8px 0 0;">Click the circle by the name field to add a portrait. Drag a person to reposition them. Hover anyone or any line for their notes. Double-click a person to edit them. Click "Connect", then two people, to define how they relate. Click "Remove", then a person or line, to delete it.</p>
       </div>
     </div>
   </div>
@@ -5516,12 +5534,13 @@ window.DISC_DATA = DISC_DATA;
   // Purely manual — nodes and connections are typed in by the player, never
   // pulled automatically from the roster or the Touchstones list, so it
   // stays useful for NPCs, rivals, and anyone else who isn't a full sheet.
-  let relMapNodes = [];   // {id, name, type, x, y}
+  let relMapNodes = [];   // {id, name, type, x, y, notes}
   let relMapEdges = [];   // {id, a, b, type, label}
   let relMapNodeSeq = 1, relMapEdgeSeq = 1;
   let relMapConnectMode = false, relMapDeleteMode = false;
   let relMapConnectFirst = null, relMapFocus = null;
   let relMapPendingEdge = null; // {a,b} awaiting type/label confirmation
+  let relMapEditingId = null;   // node id currently being edited via the form
 
   const REL_MAP_EDGE_TYPES = {
     trust:      { label: 'Trust / ally',      color: '#3fae86', width: 1.5, dash: null,    arrow: false },
@@ -5533,27 +5552,120 @@ window.DISC_DATA = DISC_DATA;
     secret:     { label: 'Hidden history',     color: 'var(--border-md)', width: 1, dash: '3 3', arrow: false },
     other:      { label: 'Other',              color: 'var(--text-muted)', width: 1, dash: '2 2', arrow: false },
   };
+  // Each type carries a small icon (raw SVG markup, 24x24 viewBox, drawn with
+  // currentColor) shown above the name on every node of that type.
   const REL_MAP_NODE_TYPES = {
-    gray:   { label: 'Neutral',        stroke: 'var(--border-md)' },
-    pink:   { label: 'Touchstone',     stroke: '#d4547e' },
-    coral:  { label: 'Rival / threat', stroke: '#d85a30' },
-    teal:   { label: 'Ally',           stroke: '#3fae86' },
-    purple: { label: 'Kindred',        stroke: '#8b7fe0' },
+    gray:   { label: 'Neutral',        stroke: 'var(--border-md)',
+      icon: '<circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="1.4" fill="none"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" stroke="currentColor" stroke-width="1.4" fill="none" stroke-linecap="round"/>' },
+    pink:   { label: 'Touchstone',     stroke: '#d4547e',
+      icon: '<path d="M12 20s-7-4.2-9.3-8.7C1 8 3.3 4 7 4c2 0 3.8 1.3 5 3 1.2-1.7 3-3 5-3 3.7 0 6 4 4.3 7.3C19 15.8 12 20 12 20z" stroke="currentColor" stroke-width="1.3" fill="currentColor" fill-opacity="0.18"/>' },
+    coral:  { label: 'Rival / threat', stroke: '#d85a30',
+      icon: '<path d="M5 5 L19 19 M19 5 L5 19" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>' },
+    teal:   { label: 'Ally',           stroke: '#3fae86',
+      icon: '<path d="M12 3 L19 6 V11 C19 16 15.5 19.3 12 21 C8.5 19.3 5 16 5 11 V6 Z" stroke="currentColor" stroke-width="1.4" fill="currentColor" fill-opacity="0.15"/>' },
+    purple: { label: 'Kindred',        stroke: '#8b7fe0',
+      icon: '<path d="M12 3 C12 3 5.5 11 5.5 15.5 a6.5 6.5 0 0 0 13 0 C18.5 11 12 3 12 3z" stroke="currentColor" stroke-width="1.3" fill="currentColor" fill-opacity="0.2"/>' },
   };
 
   const relMapSvg      = document.getElementById('relMapSvg');
   const relMapEdgesG   = document.getElementById('relMapEdgesGroup');
   const relMapNodesG   = document.getElementById('relMapNodesGroup');
+  const relMapClipDefs = document.getElementById('relMapClipDefs');
   const relMapEmptyEl  = document.getElementById('relMapEmpty');
+  const relMapWrapEl   = document.getElementById('relMapCanvasWrap');
+  const relMapTooltipEl= document.getElementById('relMapTooltip');
   const relMapNameIn   = document.getElementById('relMapNameInput');
   const relMapTypeIn   = document.getElementById('relMapTypeInput');
+  const relMapNotesIn  = document.getElementById('relMapNotesInput');
+  const relMapImageInput   = document.getElementById('relMapImageInput');
+  const relMapImageBtn     = document.getElementById('relMapImageBtn');
+  const relMapImageIcon    = document.getElementById('relMapImageIcon');
+  const relMapImagePreview = document.getElementById('relMapImagePreview');
+  const relMapImageClearBtn= document.getElementById('relMapImageClearBtn');
+  let relMapPendingImage = null; // data URL staged for the person currently being added/edited
   const relMapAddBtn   = document.getElementById('relMapAddBtn');
+  const relMapAddBtnLbl= document.getElementById('relMapAddBtnLabel');
+  const relMapAddBtnIco= document.getElementById('relMapAddBtnIcon');
+  const relMapEditLbl  = document.getElementById('relMapEditingLabel');
+  const relMapEditName = document.getElementById('relMapEditingName');
+  const relMapCancelEditBtn = document.getElementById('relMapCancelEditBtn');
+  const relMapModeBanner = document.getElementById('relMapModeBanner');
+  const relMapModeBannerText = document.getElementById('relMapModeBannerText');
+  const relMapModeDoneBtn = document.getElementById('relMapModeDoneBtn');
   const relMapConnBtn  = document.getElementById('relMapConnectBtn');
   const relMapDelBtn   = document.getElementById('relMapDeleteBtn');
   const relMapForm     = document.getElementById('relMapEdgeForm');
   const relMapFormLbl  = document.getElementById('relMapEdgeFormLabel');
   const relMapEdgeType = document.getElementById('relMapEdgeTypeInput');
   const relMapEdgeNote = document.getElementById('relMapEdgeLabelInput');
+
+  function relMapEscape(s) {
+    return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+  function relMapShowTooltip(html, clientX, clientY) {
+    if (relMapDragId) return;
+    relMapTooltipEl.innerHTML = html;
+    relMapTooltipEl.style.display = 'block';
+    relMapPositionTooltip(clientX, clientY);
+  }
+  function relMapPositionTooltip(clientX, clientY) {
+    if (relMapTooltipEl.style.display !== 'block') return;
+    const wrapRect = relMapWrapEl.getBoundingClientRect();
+    let left = clientX - wrapRect.left + 16;
+    let top  = clientY - wrapRect.top + 16;
+    const maxLeft = wrapRect.width  - relMapTooltipEl.offsetWidth  - 8;
+    const maxTop  = wrapRect.height - relMapTooltipEl.offsetHeight - 8;
+    if (left > maxLeft) left = Math.max(8, clientX - wrapRect.left - relMapTooltipEl.offsetWidth - 16);
+    if (top  > maxTop)  top  = Math.max(8, maxTop);
+    relMapTooltipEl.style.left = left + 'px';
+    relMapTooltipEl.style.top  = top + 'px';
+  }
+  function relMapHideTooltip() { relMapTooltipEl.style.display = 'none'; }
+
+  // Small avatar thumbnails only — compressed well below the size the main
+  // portrait uses, since the map can hold many people at once.
+  function relMapCompressImage(file, callback) {
+    const reader = new FileReader();
+    reader.onload = e => {
+      const img = new Image();
+      img.onload = () => {
+        const MAX = 160;
+        const scale = Math.min(1, MAX / Math.max(img.width, img.height));
+        const w = Math.round(img.width * scale), h = Math.round(img.height * scale);
+        const canvas = document.createElement('canvas');
+        canvas.width = w; canvas.height = h;
+        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+        try { callback(canvas.toDataURL('image/jpeg', 0.82)); }
+        catch(err) { callback(e.target.result); }
+      };
+      img.onerror = () => callback(null);
+      img.src = e.target.result;
+    };
+    reader.onerror = () => callback(null);
+    reader.readAsDataURL(file);
+  }
+  function relMapSetImagePreview(dataUrl) {
+    relMapPendingImage = dataUrl || null;
+    if (dataUrl) {
+      relMapImagePreview.src = dataUrl;
+      relMapImagePreview.style.display = 'block';
+      relMapImageIcon.style.display = 'none';
+      relMapImageClearBtn.style.display = 'inline-block';
+    } else {
+      relMapImagePreview.src = '';
+      relMapImagePreview.style.display = 'none';
+      relMapImageIcon.style.display = 'block';
+      relMapImageClearBtn.style.display = 'none';
+    }
+  }
+  relMapImageBtn.addEventListener('click', () => relMapImageInput.click());
+  relMapImageInput.addEventListener('change', () => {
+    const file = relMapImageInput.files && relMapImageInput.files[0];
+    relMapImageInput.value = '';
+    if (!file) return;
+    relMapCompressImage(file, dataUrl => { if (dataUrl) relMapSetImagePreview(dataUrl); });
+  });
+  relMapImageClearBtn.addEventListener('click', () => relMapSetImagePreview(null));
 
   function relMapSvgPoint(clientX, clientY) {
     const pt = relMapSvg.createSVGPoint();
@@ -5564,13 +5676,14 @@ window.DISC_DATA = DISC_DATA;
   function relMapTrim(n1, n2) {
     const dx = n2.x - n1.x, dy = n2.y - n1.y, dist = Math.sqrt(dx*dx + dy*dy) || 1;
     const ux = dx / dist, uy = dy / dist;
-    return { x1: n1.x + ux*36, y1: n1.y + uy*36, x2: n2.x - ux*36, y2: n2.y - uy*36 };
+    return { x1: n1.x + ux*38, y1: n1.y + uy*38, x2: n2.x - ux*38, y2: n2.y - uy*38 };
   }
 
   function relMapRender() {
     relMapEmptyEl.style.display = relMapNodes.length ? 'none' : 'block';
     relMapEdgesG.innerHTML = '';
     relMapNodesG.innerHTML = '';
+    relMapClipDefs.innerHTML = '';
 
     relMapEdges.forEach(edge => {
       const a = relMapNodes.find(n => n.id === edge.a);
@@ -5579,11 +5692,26 @@ window.DISC_DATA = DISC_DATA;
       const t = relMapTrim(a, b);
       const def = REL_MAP_EDGE_TYPES[edge.type] || REL_MAP_EDGE_TYPES.other;
       const hit = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+      hit.setAttribute('data-edge-id', edge.id);
       hit.setAttribute('x1', t.x1); hit.setAttribute('y1', t.y1);
       hit.setAttribute('x2', t.x2); hit.setAttribute('y2', t.y2);
       hit.setAttribute('stroke', 'transparent'); hit.setAttribute('stroke-width', '14');
       hit.style.cursor = 'pointer';
       hit.addEventListener('click', ev => { ev.stopPropagation(); relMapEdgeClicked(edge.id); });
+      hit.addEventListener('mouseenter', ev => {
+        const noteHtml = edge.label
+          ? `<div style="margin-top:4px;">${relMapEscape(edge.label)}</div>`
+          : '';
+        relMapShowTooltip(
+          `<div style="display:flex;align-items:center;gap:6px;">` +
+            `<span style="width:9px;height:9px;border-radius:50%;background:${def.color};display:inline-block;flex:none;"></span>` +
+            `<span style="font-family:'Cinzel',serif;font-size:10px;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-gold);">${def.label}</span>` +
+          `</div>${noteHtml}`,
+          ev.clientX, ev.clientY
+        );
+      });
+      hit.addEventListener('mousemove', ev => relMapPositionTooltip(ev.clientX, ev.clientY));
+      hit.addEventListener('mouseleave', relMapHideTooltip);
       const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
       line.setAttribute('x1', t.x1); line.setAttribute('y1', t.y1);
       line.setAttribute('x2', t.x2); line.setAttribute('y2', t.y2);
@@ -5603,41 +5731,142 @@ window.DISC_DATA = DISC_DATA;
         (e.a === node.id && e.b === relMapFocus) || (e.b === node.id && e.a === relMapFocus));
       const dim = relMapFocus && node.id !== relMapFocus && !connected;
       const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+      g.setAttribute('data-node-id', node.id);
       g.style.cursor = 'grab';
       g.style.opacity = dim ? '0.35' : '1';
-      const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-      circle.setAttribute('cx', node.x); circle.setAttribute('cy', node.y); circle.setAttribute('r', 36);
-      circle.setAttribute('fill', 'var(--bg-raise)');
-      circle.setAttribute('stroke', node.id === relMapConnectFirst ? 'var(--crimson)' : def.stroke);
-      circle.setAttribute('stroke-width', node.id === relMapConnectFirst ? 2 : 1.3);
-      const nameTxt = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-      nameTxt.setAttribute('x', node.x); nameTxt.setAttribute('y', node.y - 4);
-      nameTxt.setAttribute('text-anchor', 'middle'); nameTxt.setAttribute('dominant-baseline', 'central');
-      nameTxt.setAttribute('font-family', "'EB Garamond', serif"); nameTxt.setAttribute('font-size', '13');
-      nameTxt.setAttribute('fill', 'var(--text-primary)');
-      nameTxt.textContent = node.name.length > 12 ? node.name.slice(0, 11) + '\u2026' : node.name;
-      const typeTxt = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-      typeTxt.setAttribute('x', node.x); typeTxt.setAttribute('y', node.y + 12);
-      typeTxt.setAttribute('text-anchor', 'middle'); typeTxt.setAttribute('dominant-baseline', 'central');
-      typeTxt.setAttribute('font-family', "'EB Garamond', serif"); typeTxt.setAttribute('font-size', '10');
-      typeTxt.setAttribute('fill', 'var(--text-muted)');
-      typeTxt.textContent = def.label;
-      g.appendChild(circle); g.appendChild(nameTxt); g.appendChild(typeTxt);
+      const ringColor = node.id === relMapConnectFirst ? 'var(--crimson)' : def.stroke;
+      const ringWidth = node.id === relMapConnectFirst ? 2 : 1.3;
+
+      if (node.image) {
+        // Portrait fills the circle; category becomes a small corner badge
+        // instead of the icon+two-line layout used when there's no photo.
+        const clipId = 'relMapClip-' + node.id;
+        const clip = document.createElementNS('http://www.w3.org/2000/svg', 'clipPath');
+        clip.setAttribute('id', clipId);
+        const clipCircle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        clipCircle.setAttribute('cx', node.x); clipCircle.setAttribute('cy', node.y); clipCircle.setAttribute('r', 38);
+        clip.appendChild(clipCircle);
+        relMapClipDefs.appendChild(clip);
+
+        const img = document.createElementNS('http://www.w3.org/2000/svg', 'image');
+        img.setAttributeNS('http://www.w3.org/1999/xlink', 'href', node.image);
+        img.setAttribute('href', node.image);
+        img.setAttribute('x', node.x - 38); img.setAttribute('y', node.y - 38);
+        img.setAttribute('width', 76); img.setAttribute('height', 76);
+        img.setAttribute('preserveAspectRatio', 'xMidYMid slice');
+        img.setAttribute('clip-path', `url(#${clipId})`);
+        const ring = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        ring.setAttribute('cx', node.x); ring.setAttribute('cy', node.y); ring.setAttribute('r', 38);
+        ring.setAttribute('fill', 'none');
+        ring.setAttribute('stroke', ringColor); ring.setAttribute('stroke-width', ringWidth);
+        const badgeBg = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        badgeBg.setAttribute('cx', node.x + 27); badgeBg.setAttribute('cy', node.y + 27); badgeBg.setAttribute('r', 11);
+        badgeBg.setAttribute('fill', 'var(--bg-raise)'); badgeBg.setAttribute('stroke', def.stroke); badgeBg.setAttribute('stroke-width', 1.2);
+        const badgeIcon = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        badgeIcon.setAttribute('x', node.x + 20); badgeIcon.setAttribute('y', node.y + 20);
+        badgeIcon.setAttribute('width', 14); badgeIcon.setAttribute('height', 14);
+        badgeIcon.setAttribute('viewBox', '0 0 24 24');
+        badgeIcon.style.color = def.stroke;
+        badgeIcon.style.overflow = 'visible';
+        badgeIcon.innerHTML = def.icon;
+        const nameTxt = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        nameTxt.setAttribute('x', node.x); nameTxt.setAttribute('y', node.y + 52);
+        nameTxt.setAttribute('text-anchor', 'middle'); nameTxt.setAttribute('dominant-baseline', 'central');
+        nameTxt.setAttribute('font-family', "'EB Garamond', serif"); nameTxt.setAttribute('font-size', '13');
+        nameTxt.setAttribute('fill', 'var(--text-primary)');
+        nameTxt.textContent = node.name.length > 14 ? node.name.slice(0, 13) + '\u2026' : node.name;
+        g.appendChild(img); g.appendChild(ring); g.appendChild(badgeBg); g.appendChild(badgeIcon); g.appendChild(nameTxt);
+      } else {
+        const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        circle.setAttribute('cx', node.x); circle.setAttribute('cy', node.y); circle.setAttribute('r', 38);
+        circle.setAttribute('fill', 'var(--bg-raise)');
+        circle.setAttribute('stroke', ringColor);
+        circle.setAttribute('stroke-width', ringWidth);
+        const iconSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        iconSvg.setAttribute('x', node.x - 8); iconSvg.setAttribute('y', node.y - 29);
+        iconSvg.setAttribute('width', 16); iconSvg.setAttribute('height', 16);
+        iconSvg.setAttribute('viewBox', '0 0 24 24');
+        iconSvg.style.color = def.stroke;
+        iconSvg.style.overflow = 'visible';
+        iconSvg.innerHTML = def.icon;
+        const nameTxt = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        nameTxt.setAttribute('x', node.x); nameTxt.setAttribute('y', node.y + 3);
+        nameTxt.setAttribute('text-anchor', 'middle'); nameTxt.setAttribute('dominant-baseline', 'central');
+        nameTxt.setAttribute('font-family', "'EB Garamond', serif"); nameTxt.setAttribute('font-size', '13');
+        nameTxt.setAttribute('fill', 'var(--text-primary)');
+        nameTxt.textContent = node.name.length > 12 ? node.name.slice(0, 11) + '\u2026' : node.name;
+        const typeTxt = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        typeTxt.setAttribute('x', node.x); typeTxt.setAttribute('y', node.y + 19);
+        typeTxt.setAttribute('text-anchor', 'middle'); typeTxt.setAttribute('dominant-baseline', 'central');
+        typeTxt.setAttribute('font-family', "'EB Garamond', serif"); typeTxt.setAttribute('font-size', '10');
+        typeTxt.setAttribute('fill', 'var(--text-muted)');
+        typeTxt.textContent = def.label;
+        g.appendChild(circle); g.appendChild(iconSvg); g.appendChild(nameTxt); g.appendChild(typeTxt);
+      }
+
       g.addEventListener('pointerdown', ev => relMapDragStart(ev, node.id));
+      g.addEventListener('mouseenter', ev => {
+        const notesHtml = node.notes
+          ? `<div style="margin-top:4px;">${relMapEscape(node.notes)}</div>`
+          : `<div style="margin-top:4px;font-style:italic;color:var(--text-muted);">No notes yet \u2014 double-click to add.</div>`;
+        relMapShowTooltip(
+          `<div style="font-family:'EB Garamond',serif;font-size:13px;color:var(--text-primary);">${relMapEscape(node.name)}</div>` +
+          `<div style="font-family:'Cinzel',serif;font-size:9px;letter-spacing:0.08em;text-transform:uppercase;color:${def.stroke};margin-top:2px;">${def.label}</div>` +
+          notesHtml,
+          ev.clientX, ev.clientY
+        );
+      });
+      g.addEventListener('mousemove', ev => relMapPositionTooltip(ev.clientX, ev.clientY));
+      g.addEventListener('mouseleave', relMapHideTooltip);
       relMapNodesG.appendChild(g);
     });
   }
 
-  function relMapAddNode() {
+  function relMapSubmitPersonForm() {
     const name = relMapNameIn.value.trim();
     if (!name) { relMapNameIn.focus(); return; }
-    const count = relMapNodes.length;
-    const cols = 4;
-    const x = 90 + (count % cols) * 150;
-    const y = 80 + Math.floor(count / cols) * 110;
-    relMapNodes.push({ id: 'n' + (relMapNodeSeq++), name, type: relMapTypeIn.value, x, y });
-    relMapNameIn.value = '';
+    const notes = relMapNotesIn.value.trim();
+    const image = relMapPendingImage;
+    if (relMapEditingId) {
+      const node = relMapNodes.find(n => n.id === relMapEditingId);
+      if (node) { node.name = name; node.type = relMapTypeIn.value; node.notes = notes; node.image = image; }
+      relMapCancelEdit();
+    } else {
+      const count = relMapNodes.length;
+      const cols = 4;
+      const x = 90 + (count % cols) * 150;
+      const y = 90 + Math.floor(count / cols) * 130;
+      relMapNodes.push({ id: 'n' + (relMapNodeSeq++), name, type: relMapTypeIn.value, notes, image, x, y });
+      relMapNameIn.value = ''; relMapNotesIn.value = ''; relMapSetImagePreview(null);
+    }
     relMapRender(); markDirty();
+  }
+
+  function relMapStartEdit(id) {
+    const node = relMapNodes.find(n => n.id === id);
+    if (!node) return;
+    relMapCancelEdgeForm();
+    relMapEditingId = id;
+    relMapNameIn.value  = node.name;
+    relMapTypeIn.value  = node.type;
+    relMapNotesIn.value = node.notes || '';
+    relMapSetImagePreview(node.image || null);
+    relMapAddBtnIco.textContent = '\u2713';
+    relMapAddBtnLbl.textContent = 'Save Changes';
+    relMapEditLbl.style.display = 'inline';
+    relMapEditName.textContent  = node.name;
+    relMapCancelEditBtn.style.display = 'inline-block';
+    relMapHideTooltip();
+    relMapNameIn.focus();
+  }
+  function relMapCancelEdit() {
+    relMapEditingId = null;
+    relMapNameIn.value = ''; relMapNotesIn.value = ''; relMapTypeIn.selectedIndex = 0;
+    relMapSetImagePreview(null);
+    relMapAddBtnIco.textContent = '+';
+    relMapAddBtnLbl.textContent = 'Add Person';
+    relMapEditLbl.style.display = 'none';
+    relMapCancelEditBtn.style.display = 'none';
   }
 
   function relMapSetMode(mode) {
@@ -5646,24 +5875,47 @@ window.DISC_DATA = DISC_DATA;
     relMapDeleteMode  = (mode === 'delete')  ? !relMapDeleteMode  : false;
     relMapConnectFirst = null;
     relMapCancelEdgeForm();
+    relMapCancelEdit();
     relMapConnBtn.classList.toggle('relmap-active', relMapConnectMode);
     relMapConnBtn.style.borderColor = relMapConnectMode ? 'var(--crimson)' : 'var(--border-md)';
     relMapConnBtn.style.color       = relMapConnectMode ? 'var(--crimson)' : 'var(--text-muted)';
     relMapDelBtn.classList.toggle('relmap-active', relMapDeleteMode);
     relMapDelBtn.style.borderColor = relMapDeleteMode ? 'var(--crimson)' : 'var(--border-md)';
     relMapDelBtn.style.color       = relMapDeleteMode ? 'var(--crimson)' : 'var(--text-muted)';
+    relMapUpdateModeBanner();
+    relMapWrapEl.style.borderColor = (relMapConnectMode || relMapDeleteMode) ? 'var(--crimson)' : 'var(--border-md)';
+    relMapSvg.style.cursor = relMapDeleteMode ? 'not-allowed' : relMapConnectMode ? 'crosshair' : '';
     relMapRender();
   }
 
+  function relMapUpdateModeBanner() {
+    if (relMapDeleteMode) {
+      relMapModeBannerText.textContent = '✕ Remove mode — click a person or a line to delete it.';
+      relMapModeBanner.style.display = 'flex';
+    } else if (relMapConnectMode) {
+      relMapModeBannerText.textContent = relMapConnectFirst
+        ? '⇄ Connect mode — now click the second person to link.'
+        : '⇄ Connect mode — click the first of two people to link.';
+      relMapModeBanner.style.display = 'flex';
+    } else {
+      relMapModeBanner.style.display = 'none';
+    }
+  }
+  relMapModeDoneBtn.addEventListener('click', () => relMapSetMode(null));
+
   function relMapNodeClicked(id) {
     if (relMapDeleteMode) {
+      if (id === relMapEditingId) relMapCancelEdit();
       relMapNodes = relMapNodes.filter(n => n.id !== id);
       relMapEdges = relMapEdges.filter(e => e.a !== id && e.b !== id);
-      relMapRender(); markDirty(); return;
+      relMapHideTooltip();
+      markDirty();
+      relMapSetMode(null); // one delete at a time, then back to normal — safer default
+      return;
     }
     if (relMapConnectMode) {
-      if (!relMapConnectFirst) { relMapConnectFirst = id; relMapRender(); return; }
-      if (relMapConnectFirst === id) { relMapConnectFirst = null; relMapRender(); return; }
+      if (!relMapConnectFirst) { relMapConnectFirst = id; relMapUpdateModeBanner(); relMapRender(); return; }
+      if (relMapConnectFirst === id) { relMapConnectFirst = null; relMapUpdateModeBanner(); relMapRender(); return; }
       relMapOpenEdgeForm(relMapConnectFirst, id);
       return;
     }
@@ -5674,13 +5926,12 @@ window.DISC_DATA = DISC_DATA;
   function relMapEdgeClicked(edgeId) {
     if (relMapDeleteMode) {
       relMapEdges = relMapEdges.filter(e => e.id !== edgeId);
-      relMapRender(); markDirty(); return;
+      relMapHideTooltip();
+      markDirty();
+      relMapSetMode(null); // one delete at a time, then back to normal — safer default
+      return;
     }
-    const edge = relMapEdges.find(e => e.id === edgeId);
-    if (edge) {
-      const def = REL_MAP_EDGE_TYPES[edge.type] || REL_MAP_EDGE_TYPES.other;
-      try { showToast((edge.label ? edge.label + ' \u2014 ' : '') + def.label); } catch(e) {}
-    }
+    // Hovering the line already surfaces its type and note via tooltip.
   }
 
   function relMapOpenEdgeForm(aId, bId) {
@@ -5691,11 +5942,13 @@ window.DISC_DATA = DISC_DATA;
     relMapEdgeType.selectedIndex = 0;
     relMapEdgeNote.value = '';
     relMapForm.style.display = 'flex';
+    relMapModeBanner.style.display = 'none';
   }
   function relMapCancelEdgeForm() {
     relMapPendingEdge = null;
     relMapForm.style.display = 'none';
     relMapConnectFirst = null;
+    relMapUpdateModeBanner();
   }
   function relMapConfirmEdgeForm() {
     if (!relMapPendingEdge) return;
@@ -5709,30 +5962,48 @@ window.DISC_DATA = DISC_DATA;
   }
 
   let relMapDragId = null, relMapDragMoved = false;
+  let relMapLastClickId = null, relMapLastClickTime = 0;
   function relMapDragStart(ev, id) {
     ev.preventDefault();
     relMapDragId = id; relMapDragMoved = false;
+    relMapHideTooltip();
   }
   relMapSvg.addEventListener('pointermove', ev => {
     if (!relMapDragId) return;
     const p = relMapSvgPoint(ev.clientX, ev.clientY);
     const node = relMapNodes.find(n => n.id === relMapDragId);
     if (!node) return;
-    node.x = Math.max(36, Math.min(604, p.x));
-    node.y = Math.max(36, Math.min(344, p.y));
+    node.x = Math.max(38, Math.min(602, p.x));
+    node.y = Math.max(38, Math.min(312, p.y));
     relMapDragMoved = true;
     relMapRender();
   });
   function relMapDragEnd() {
-    if (relMapDragId && !relMapDragMoved) relMapNodeClicked(relMapDragId);
-    else if (relMapDragId) markDirty();
+    if (relMapDragId && !relMapDragMoved) {
+      // preventDefault() on pointerdown (needed for reliable dragging)
+      // suppresses the browser's native dblclick, so double-click-to-edit
+      // is detected manually here: two non-drag clicks on the same node
+      // within 400ms.
+      const id = relMapDragId;
+      const now = Date.now();
+      if (!relMapConnectMode && !relMapDeleteMode &&
+          relMapLastClickId === id && (now - relMapLastClickTime) < 400) {
+        relMapLastClickId = null; relMapLastClickTime = 0;
+        relMapStartEdit(id);
+      } else {
+        relMapLastClickId = id; relMapLastClickTime = now;
+        relMapNodeClicked(id);
+      }
+    } else if (relMapDragId) markDirty();
     relMapDragId = null;
   }
   relMapSvg.addEventListener('pointerup', relMapDragEnd);
   relMapSvg.addEventListener('pointerleave', relMapDragEnd);
 
-  relMapAddBtn.addEventListener('click', relMapAddNode);
-  relMapNameIn.addEventListener('keydown', e => { if (e.key === 'Enter') relMapAddNode(); });
+  relMapAddBtn.addEventListener('click', relMapSubmitPersonForm);
+  relMapNameIn.addEventListener('keydown', e => { if (e.key === 'Enter') relMapSubmitPersonForm(); });
+  relMapNotesIn.addEventListener('keydown', e => { if (e.key === 'Enter') relMapSubmitPersonForm(); });
+  relMapCancelEditBtn.addEventListener('click', relMapCancelEdit);
   relMapConnBtn.addEventListener('click', () => relMapSetMode('connect'));
   relMapDelBtn.addEventListener('click', () => relMapSetMode('delete'));
   document.getElementById('relMapEdgeConfirmBtn').addEventListener('click', relMapConfirmEdgeForm);
@@ -5745,6 +6016,7 @@ window.DISC_DATA = DISC_DATA;
     relMapNodeSeq = (s && s.nodeSeq) ? s.nodeSeq : (relMapNodes.length + 1);
     relMapEdgeSeq = (s && s.edgeSeq) ? s.edgeSeq : (relMapEdges.length + 1);
     relMapFocus = null; relMapConnectFirst = null;
+    relMapHideTooltip();
     relMapSetMode(null);
   }
   function relMapClear() { relMapSetState(null); }
