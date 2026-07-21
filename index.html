@@ -4105,10 +4105,16 @@
     <div class="adv-col">
       <div class="adv-col-title lore" style="display:flex;align-items:center;justify-content:space-between;">
         <span>Loresheets</span>
-        <button onclick="addLoresheetRow('text')" style="font-family:'Cinzel',serif;font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:#b070d0;background:transparent;border:0.5px solid rgba(160,80,210,0.5);border-radius:2px;padding:2px 8px;cursor:pointer;display:flex;align-items:center;gap:3px;opacity:0.8;transition:opacity 0.2s;"
-          onmouseover="this.style.opacity='1';this.style.borderColor='#b070d0'" onmouseout="this.style.opacity='0.8';this.style.borderColor='rgba(160,80,210,0.5)'">
-          <span style="font-size:14px;line-height:1;">+</span> Add
-        </button>
+        <div style="display:flex;gap:5px;align-items:center;">
+          <button onclick="openPresetModal('loresheet')" style="font-family:'Cinzel',serif;font-size:10px;letter-spacing:0.12em;text-transform:uppercase;background:transparent;border-radius:2px;padding:2px 8px;cursor:pointer;display:flex;align-items:center;gap:3px;opacity:0.8;transition:opacity 0.2s;color:#b070d0;border:0.5px solid rgba(160,80,210,0.5)"
+            onmouseover="this.style.opacity='1';this.style.borderColor='#b070d0'" onmouseout="this.style.opacity='0.8';this.style.borderColor='rgba(160,80,210,0.5)'">
+            <span style="font-size:14px;line-height:1;">+</span> Preset
+          </button>
+          <button onclick="addLoresheetRow('text')" style="font-family:'Cinzel',serif;font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:#b070d0;background:transparent;border:0.5px solid rgba(160,80,210,0.5);border-radius:2px;padding:2px 8px;cursor:pointer;display:flex;align-items:center;gap:3px;opacity:0.8;transition:opacity 0.2s;"
+            onmouseover="this.style.opacity='1';this.style.borderColor='#b070d0'" onmouseout="this.style.opacity='0.8';this.style.borderColor='rgba(160,80,210,0.5)'">
+            <span style="font-size:14px;line-height:1;">+</span> Custom
+          </button>
+        </div>
       </div>
 
       <!-- Permanent loresheet dropdown — single, unremovable -->
@@ -4270,6 +4276,21 @@
         </optgroup>
       </select>
 
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-top:10px;margin-bottom:4px;">
+        <span style="font-family:'Cinzel',serif;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#b070d0;">Loresheet Powers</span>
+        <div style="display:flex;gap:5px;align-items:center;">
+          <button onclick="openPresetModal('loresheetPower')" style="font-family:'Cinzel',serif;font-size:10px;letter-spacing:0.12em;text-transform:uppercase;background:transparent;border-radius:2px;padding:2px 8px;cursor:pointer;display:flex;align-items:center;gap:3px;opacity:0.8;transition:opacity 0.2s;color:#b070d0;border:0.5px solid rgba(160,80,210,0.5)"
+            onmouseover="this.style.opacity='1';this.style.borderColor='#b070d0'" onmouseout="this.style.opacity='0.8';this.style.borderColor='rgba(160,80,210,0.5)'">
+            <span style="font-size:14px;line-height:1;">+</span> Preset
+          </button>
+          <button onclick="makeLoresheetPowerRow(null)" style="font-family:'Cinzel',serif;font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:#b070d0;background:transparent;border:0.5px solid rgba(160,80,210,0.5);border-radius:2px;padding:2px 8px;cursor:pointer;display:flex;align-items:center;gap:3px;opacity:0.8;transition:opacity 0.2s;"
+            onmouseover="this.style.opacity='1';this.style.borderColor='#b070d0'" onmouseout="this.style.opacity='0.8';this.style.borderColor='rgba(160,80,210,0.5)'">
+            <span style="font-size:14px;line-height:1;">+</span> Custom
+          </button>
+        </div>
+      </div>
+      <div id="loresheetPowerRows"></div>
+
       <div id="loresheetRows"></div>
     </div>
 
@@ -4313,7 +4334,301 @@ const LS_SELECT_STYLE = [
   'background-repeat:no-repeat','background-position:right 7px center','background-size:7px'
 ].join(';');
 
-function addLoresheetRow(type, savedValue, savedRating) {
+// These are short original flavor summaries, not reproductions of any
+// sourcebook's mechanical text — several of these names are chronicle- or
+// homebrew-specific rather than universally standard, so treat the
+// descriptions as an editable starting point rather than a rules citation.
+// Retype the Custom field, or edit LORESHEETS_DATA below, to correct or
+// expand on them for your table.
+const LORESHEETS_DATA = [
+  { name:"Ashfinders",                             cat:"Independent",  clan:"", desc:["Kindred who deliberately seek out and pick through the ashes left behind by Final Death, hunting for lingering power or secrets"] },
+  { name:"Baali",                                  cat:"Independent",  clan:"", desc:["A bloodline whispered to trace its power back to something far older and darker than Caine — associated with corruption and infernal dealings"] },
+  { name:"Bahari",                                 cat:"Independent",  clan:"", desc:["Cultists devoted to Lilith rather than Caine, viewing the Kindred condition as a gift to be embraced rather than a curse to endure"] },
+  { name:"Church of Caine",                        cat:"Independent",  clan:"", desc:["A sect that worships Caine outright as a literal god, treating the Kindred condition itself as sacred scripture"] },
+  { name:"Cult of Mithras",                        cat:"Independent",  clan:"", desc:["Followers organized around the legend of the ancient and powerful Kindred elder Mithras and the mysteries he is said to have left behind"] },
+  { name:"Carthian Movement",                      cat:"Independent",  clan:"", desc:["Kindred pushing for democratic and modernized structures of vampire self-governance, rejecting older feudal models of Kindred society"] },
+  { name:"Church of Set",                          cat:"Independent",  clan:"", desc:["An old religious tradition built around the Egyptian god Set, historically tied to corruption of faith and temptation"] },
+  { name:"Daughter's of Cacophony",                cat:"Independent",  clan:"", desc:["A loose sisterhood built around music and sound as both art and weapon, said to sing in ways only Kindred ears can fully appreciate"] },
+  { name:"Helena's Brood",                         cat:"Independent",  clan:"", desc:["Descendants and associates of the elder Helena, bound by shared lineage or shared debt to her legacy"] },
+  { name:"Children of the Blood",                  cat:"Independent",  clan:"", desc:["Kindred whose stories center on blood itself — its rituals, its politics, and what it truly means to share it"] },
+  { name:"The Gorgons, Lamia",                     cat:"Hecata Only",  clan:"Hecata", desc:["A Hecata family line associated with old world serpent and stone-gaze mythology, secretive even by Hecata standards"] },
+  { name:"Harbringers of Ashur",                   cat:"Hecata Only",  clan:"Hecata", desc:["A Hecata family with roots in ancient death-cult tradition, treating necromancy as inherited duty rather than mere tool"] },
+  { name:"Nation of Blood, the Samedi",            cat:"Hecata Only",  clan:"Hecata", desc:["The Samedi family within Hecata, marked by a visibly rotting, corpse-like appearance and a grim sense of humor about it"] },
+  { name:"Flesh-Eaters, the Nagaraja",             cat:"Hecata Only",  clan:"Hecata", desc:["The Nagaraja family within Hecata, infamous for consuming flesh rather than only blood to fuel their power"] },
+  { name:"Bankers of Dunsirn",                     cat:"Hecata Only",  clan:"Hecata", desc:["A Hecata family whose influence runs through inheritance, estates, and old money rather than the streets"] },
+  { name:"Criminal Puttanesca",                    cat:"Hecata Only",  clan:"Hecata", desc:["A Hecata family entangled with organized crime, using family loyalty as both shield and leash"] },
+  { name:"La Famiglia Giovanni",                   cat:"Hecata Only",  clan:"Hecata", desc:["The Giovanni — the family whose ruthless merger of necromancy and business built much of what Hecata is today"] },
+  { name:"Children of Tenochtitlan, the Pisanob",  cat:"Hecata Only",  clan:"Hecata", desc:["The Pisanob family within Hecata, tracing their line to Mesoamerican tradition rather than the European Giovanni branch"] },
+  { name:"Little Siblings, the Rossellini",        cat:"Hecata Only",  clan:"Hecata", desc:["The Rossellini family within Hecata, generally regarded as junior or lesser kin within the wider Hecata network"] },
+  { name:"The Grudge Masters, the Milliners",      cat:"Hecata Only",  clan:"Hecata", desc:["The Milliners family within Hecata, said to keep meticulous, long-memoried account of every debt and slight owed to them"] },
+];
+// The permanent/starting loresheet dropdown draws from a much larger,
+// separate option list (Backgrounds, Contacts, and per-clan entries) that
+// doesn't overlap much with LORESHEETS_DATA above, so it needs its own
+// description lookup. Same caveat applies: original short flavor lines,
+// not reproduced sourcebook text, and not verified against any specific
+// printing — treat these as a starting point to correct for your table.
+const LORESHEET_PERMANENT_DESCRIPTIONS = {
+  "High Clan": "A loresheet for those born into one of the Kindred's most politically privileged founding lines.",
+  "Low Clan": "A loresheet for those born into one of the more marginalized or looked-down-upon vampire lines.",
+  "Anarch Revolt": "Ties your history to the historic uprising of Kindred against Camarilla elder rule.",
+  "Birth of the Anarch Free States": "Connects you to the founding of self-governing Anarch territory free of Camarilla control.",
+  "Blood Asceticism": "A path built around discipline, restraint, and deliberate denial of the Kindred's hungers.",
+  "Blood Plagued": "Ties your history to a supernatural blood-borne plague and its lingering aftermath among Kindred.",
+  "Blood Sports": "Connects you to underground contests and gladiatorial violence staged for Kindred entertainment or profit.",
+  "Cainite Heresy": "Ties your history to a heretical medieval religious movement that worshipped Caine as a martyr-god.",
+  "Childe of the Revolution": "Marks you as an offspring of the political upheavals that reshaped Kindred society.",
+  "The Circulatory System": "Connects you to the modern black-market trade and logistics network for blood itself.",
+  "Convention of Thorns": "Ties your history to the historic treaty and Masquerade agreement between Camarilla and Sabbat.",
+  "The First Inquisition": "Connects you to the earliest historical persecution campaigns against the Kindred.",
+  "Gehenna Cults": "Marks you as touched by apocalyptic prophecy and the countdown to Gehenna.",
+  "Golconda": "Ties your history to the legendary state of vampiric spiritual enlightenment and inner peace.",
+  "Plagues of Gehenna": "Connects your story to the omens and disasters said to herald the apocalypse.",
+  "Promise of 1528": "Ties your history to a historic Kindred pact or oath sworn in that year.",
+  "Relics of the Veil": "Connects you to artifacts tied to the mystical barrier separating the living and the dead.",
+  "Road Courier": "Marks you as someone who has carried messages, goods, or secrets across long distances for Kindred society.",
+  "Ruins of Carthage": "Ties your history to the fall of the ancient Kindred city of Carthage.",
+  "Sect War Veteran": "Marks you as a survivor of open warfare between the Camarilla, Sabbat, and Anarchs.",
+  "The Trinity": "Connects you to a triad of powerful figures or forces at the center of a chronicle-defining mystery.",
+  "Veins of the Earth": "Ties your history to the deep, alien tunnels said to run beneath the mortal world.",
+  "The Week of Nightmares": "Ties your history to the infamous week of catastrophic supernatural upheaval in Kindred history.",
+  "Agata Starek": "Ties you to Agata Starek, a Kindred contact whose favor or attention shapes your story.",
+  "Ambrus Maropis": "Ties you to Ambrus Maropis, a Kindred contact whose favor or attention shapes your story.",
+  "Rudi": "Ties you to Rudi, a Kindred contact whose favor or attention shapes your story.",
+  "Salvador Garcia": "Ties you to Salvador Garcia, a Kindred contact whose favor or attention shapes your story.",
+  "Theo Bell": "Ties you to Theo Bell, the infamous Brujah enforcer, as a contact or point of history.",
+  "Carmelita Neillson": "Ties you to Carmelita Neillson, a Kindred contact whose favor or attention shapes your story.",
+  "Fatima Al-Faqadi": "Ties you to Fatima Al-Faqadi, a Kindred contact whose favor or attention shapes your story.",
+  "Fiorenza Savona": "Ties you to Fiorenza Savona, a Kindred contact whose favor or attention shapes your story.",
+  "Victoria Ash": "Ties you to Victoria Ash, a well-connected Toreador contact whose favor or attention shapes your story.",
+  "The Red Lady": "Ties you to the mysterious figure known only as the Red Lady.",
+  "Therese/Jeanette Voerman": "Ties you to the Voerman twins, Therese and Jeanette, and whatever history you share with them.",
+  "Hesha Ruhadze, Ministry": "Ties you to Hesha Ruhadze, a cunning Ministry information broker and antiquities dealer.",
+  "Tegyrius the Vizier, Banu Haqim": "Ties you to Tegyrius, a Banu Haqim elder known as the Vizier.",
+  "Beckett": "Ties you to Beckett, a Gangrel scholar known for research into vampire history and Gehenna.",
+  "Carna": "Ties you to Carna, a Tremere contact whose favor or attention shapes your story.",
+  "Amaranthan": "Ties your history to a group fixated on diablerie and the amaranth.",
+  "Cult of Shalim": "Ties your history to a secretive order devoted to the figure known as Shalim.",
+  "Infernalists, the Baali": "Ties your history to the Baali, a bloodline whispered to deal in infernal corruption.",
+  "Meneleans": "Ties your history to a secretive order whose beliefs or purpose you'll define for your chronicle.",
+  "Nephilim, exludes Nosferatu": "Ties your history to the Nephilim tradition, a lineage concept notably excluding the Nosferatu.",
+  "The One True Way": "Marks you as a follower of a singular, absolutist belief about what Kindred existence means.",
+  "The Order of Repentants": "Ties your history to Kindred seeking penance or redemption for what they've become.",
+  "Path of Lilith, the Bahari": "Ties your history to the Bahari, cultists devoted to Lilith rather than Caine.",
+  "Servitor of Irad": "Ties your history to service or devotion toward the figure known as Irad.",
+  "Stories of the Daughters": "Connects your history to legends surrounding the Daughters of Cacophony.",
+  "The Eternal Arena": "Ties your history to a storied venue for Kindred combat and spectacle.",
+  "The Pony Express": "Connects you to a courier network moving goods and secrets for Kindred clients.",
+  "The Ruby Throat": "Ties your history to a notable Kindred-frequented venue or establishment by that name.",
+  "Succubus Club Copycat": "Connects you to a venue modeled on the infamous Succubus Club nightlife scene.",
+  "Temple of Boom Contract": "Ties your history to a deal or obligation involving the Temple of Boom.",
+  "Descendant of Idder": "Marks your bloodline as tracing back to the Banu Haqim elder Idder.",
+  "Descendant of Al-Ashrad": "Marks your bloodline as tracing back to the Banu Haqim elder Al-Ashrad.",
+  "Vienna Zero": "Ties your history to Vienna Zero and whatever mystery surrounds that name in your chronicle.",
+  "Descendant of Tyler": "Marks your bloodline as tracing back to the Brujah elder Tyler.",
+  "Descendant of Kerwiya": "Marks your bloodline as tracing back to the Gangrel elder Kerwiya.",
+  "Descendant of Xaviar": "Marks your bloodline as tracing back to the Gangrel elder Xaviar.",
+  "Wolves in Sheep's Clothing": "Ties your history to ghouls operating unnoticed within mortal or Kindred society.",
+  "1444 Chamber, Anziani": "Ties your history to the Hecata's ruling council of elders, the Anziani.",
+  "Family Reunion": "Ties your history to a gathering or reconciliation among the scattered Hecata families.",
+  "Descendant of Roger de Camden": "Marks your bloodline as tracing back to the Giovanni elder Roger de Camden.",
+  "The Gorgons, Lamia": "A Hecata family line associated with old world serpent and stone-gaze mythology.",
+  "Harbringers of Ashur": "A Hecata family with roots in ancient death-cult tradition, treating necromancy as inherited duty.",
+  "Nasyon San An, the Samedi": "The Samedi family within Hecata, marked by a rotting appearance and grim humor.",
+  "Flesh-Eaters, the Nagaraja": "The Nagaraja family within Hecata, infamous for consuming flesh rather than only blood.",
+  "Bankers of Dunsirn": "A Hecata family whose influence runs through inheritance, estates, and old money.",
+  "The Criminal Puttanesca": "A Hecata family entangled with organized crime, using family loyalty as both shield and leash.",
+  "La Famiglia Giovanni": "The Giovanni — the family whose ruthless merger of necromancy and business built much of Hecata.",
+  "Children of Tenochtitlan, the Pisanob": "The Pisanob family within Hecata, tracing their line to Mesoamerican tradition.",
+  "Little Siblings, the Rossellini": "The Rossellini family within Hecata, generally regarded as junior kin in the wider network.",
+  "The Grudge Masters, the Milliners": "The Milliners family within Hecata, said to keep meticulous account of every debt owed to them.",
+  "Descendant of Montano": "Marks your bloodline as tracing back to the Lasombra elder Montano.",
+  "Descendant of the Ankou": "Marks your bloodline as tracing back to the Malkavian figure known as the Ankou.",
+  "Descendant of Vasantasena": "Marks your bloodline as tracing back to the Malkavian elder Vasantasena.",
+  "Starfall Ranch, Tobias Novak": "Ties your history to Starfall Ranch and the Malkavian Tobias Novak.",
+  "Cleopatras of Yima": "Ties your history to a secretive Nosferatu lineage associated with the name Yima.",
+  "Descendant of Zelios": "Marks your bloodline as tracing back to the Nosferatu elder Zelios.",
+  "The Nictuku": "Ties your history to the Nictuku, a feared and monstrous offshoot of the Nosferatu line.",
+  "Descendant of Phaedyme": "Marks your bloodline as tracing back to the Ravnos elder Phaedyme.",
+  "Descendant of The Fallen Lord": "Marks your bloodline as tracing back to the Salubri figure known as the Fallen Lord.",
+  "Machinations of Saulot": "Ties your history to the schemes and legacy of the Salubri antediluvian Saulot.",
+  "Student of Kirin Taunk": "Ties your history to Kirin Taunk and whatever thin-blood knowledge they impart.",
+  "Descendant of Helena": "Marks your bloodline as tracing back to the Toreador elder Helena.",
+  "Descendant of Baron Vollgirre": "Marks your bloodline as tracing back to the Toreador figure Baron Vollgirre.",
+  "Daughter of Cacophony": "Marks you as one of the Daughters of Cacophony, bound to music as art and weapon.",
+  "Son of Discord": "Marks you as a counterpart to the Daughters of Cacophony, embracing discord rather than harmony.",
+  "Descendant of Karl Schrekt": "Marks your bloodline as tracing back to the Tremere elder Karl Schrekt.",
+  "House of Carna": "Ties your history to the Tremere House of Carna and its internal politics.",
+  "Praepositor": "Marks you as holding or having held the Tremere rank of Praepositor, a chantry leader.",
+  "The Pyramid": "Ties your history to the Tremere's rigid hierarchical power structure, the Pyramid.",
+  "Descendant of Dracula": "Marks your bloodline as tracing back to the Tzimisce figure known as Dracula.",
+  "Descendant of Hardestadt": "Marks your bloodline as tracing back to the Ventrue elder Hardestadt.",
+  "Pure Ventrue Lineage": "Marks your bloodline as an unusually direct, unbroken line of Ventrue descent.",
+  "Spear of Orthia": "Ties your history to the Ventrue military tradition known as the Spear of Orthia.",
+  "Vanderbilt Ventrue": "Marks your bloodline as tracing back to the historic Vanderbilt family line among the Ventrue.",
+};
+function loresheetDescFor(name) {
+  if (!name) return '';
+  const entry = LORESHEETS_DATA.find(d => d.name === name);
+  if (entry) return entry.desc.join(' ');
+  return LORESHEET_PERMANENT_DESCRIPTIONS[name] || '';
+}
+
+// ── Loresheet Powers catalog ──────────────────────────────────────
+// Centralized data for the "Loresheet Powers" preset picker. Keyed by the
+// EXACT loresheet display string already used in the dropdowns above (so
+// nothing about loresheet selection itself changes), each entry lists the
+// powers/merits that loresheet is known to unlock.
+//
+// Honesty note: this is deliberately small. Confidently mapping every one
+// of the ~110 loresheet names above to its correct official power would
+// mean fabricating sourcebook mechanics, which isn't something to guess
+// at — entries are only added here once confirmed. "official: true" means
+// the LORESHEET itself is a real V5 loresheet name; it does NOT vouch for
+// the accuracy of the power's dots/description, which is separately
+// flagged per-power via "verified: false" until confirmed against a book.
+const LORESHEET_POWERS_CATALOG = {
+  "Descendant of Zelios": {
+    official: true,
+    source: "Unconfirmed — flagged for sourcebook verification",
+    powers: [
+      { id: "sanctuary", name: "Sanctuary", dots: 1, verified: false,
+        description: "Likely represents a haven that is unusually difficult for others to locate, enter, or threaten. Exact dot cost and mechanical text haven't been verified against a sourcebook — confirm before relying on it at the table." },
+    ]
+  },
+  // --- Corebook-tier loresheets below (~23 entries) ---
+  // These are original, thematic one-line summaries of what each loresheet is
+  // *about*, not transcriptions of book text, and every power/dot value is a
+  // placeholder guess flagged verified:false. Confirm against the actual
+  // sourcebook entry before using at the table — this is a starting point
+  // for you to correct, not a substitute for the printed Loresheet text.
+  "Anarch Revolt": { official: true, source: "Corebook — unverified", powers: [
+    { id: "anarchRevolt1", name: "Movement Contact", dots: 1, verified: false,
+      description: "Personal tie to the historical Anarch uprising against Camarilla elders, giving standing or contacts among Anarchs who remember it." } ] },
+  "Birth of the Anarch Free States": { official: true, source: "Corebook — unverified", powers: [
+    { id: "anarchFreeStates1", name: "Founding Witness", dots: 1, verified: false,
+      description: "Presence at the founding of the Anarch Free States in California, granting reputation or leverage with West Coast Anarch factions." } ] },
+  "Blood Asceticism": { official: true, source: "Corebook — unverified", powers: [
+    { id: "bloodAsceticism1", name: "Discipline of Denial", dots: 1, verified: false,
+      description: "Deliberate, trained restraint around feeding and Hunger, possibly easing resistance to Hunger-driven tests at the cost of the comforts other Kindred allow themselves." } ] },
+  "Blood Plagued": { official: true, source: "Corebook — unverified", powers: [
+    { id: "bloodPlagued1", name: "Tainted Vitae", dots: 1, verified: false,
+      description: "Connection to a strain of corrupted or diseased vitae circulating through local Kindred society, useful as a lead on its origin or a way to recognize its symptoms." } ] },
+  "Blood Sports": { official: true, source: "Corebook — unverified", powers: [
+    { id: "bloodSports1", name: "Circuit Standing", dots: 1, verified: false,
+      description: "Standing within an underground circuit of violent, wagered Kindred contests, giving access to its organizers and the favors owed there." } ] },
+  "Cainite Heresy": { official: true, source: "Corebook — unverified", powers: [
+    { id: "cainiteHeresy1", name: "Heretical Knowledge", dots: 1, verified: false,
+      description: "Familiarity with the heretical belief that vampirism is a sacred gift from God through Caine, including contacts among its secretive adherents." } ] },
+  "Childe of the Revolution": { official: true, source: "Corebook — unverified", powers: [
+    { id: "childeRevolution1", name: "Revolutionary Lineage", dots: 1, verified: false,
+      description: "Being Embraced by a notable figure of the Anarch Revolt, carrying both the reputation and the enemies that lineage implies." } ] },
+  "The Circulatory System": { official: true, source: "Corebook — unverified", powers: [
+    { id: "circulatorySystem1", name: "Network Access", dots: 1, verified: false,
+      description: "A foothold in a covert network that moves resources, vitae, or information between Kindred domains, usable to call in a favor along its route." } ] },
+  "Convention of Thorns": { official: true, source: "Corebook — unverified", powers: [
+    { id: "conventionThorns1", name: "Treaty Scholar", dots: 1, verified: false,
+      description: "Detailed knowledge of the 1493 Convention of Thorns and the Masquerade-founding treaty it produced, useful when its precedents or terms become relevant." } ] },
+  "The First Inquisition": { official: true, source: "Corebook — unverified", powers: [
+    { id: "firstInquisition1", name: "Inquisition Archive", dots: 1, verified: false,
+      description: "Access to lore or surviving records from the historical church-led persecution of Kindred, helpful for recognizing old hunting patterns or symbols." } ] },
+  "Gehenna Cults": { official: true, source: "Corebook — unverified", powers: [
+    { id: "gehennaCults1", name: "Doomsayer Contacts", dots: 1, verified: false,
+      description: "Ties into a cult anticipating Gehenna, giving insight into its rhetoric, membership, and the omens it watches for." } ] },
+  "Golconda": { official: true, source: "Corebook — unverified", powers: [
+    { id: "golconda1", name: "Path Toward Golconda", dots: 1, verified: false,
+      description: "Active pursuit of the near-mythical state of vampiric enlightenment, possibly offering some resistance to the Beast the closer that pursuit progresses." } ] },
+  "Plagues of Gehenna": { official: true, source: "Corebook — unverified", powers: [
+    { id: "plaguesGehenna1", name: "Omen Reader", dots: 1, verified: false,
+      description: "Recognition of the apocalyptic omens Kindred elders associate with Gehenna's approach, and unease among those who share that belief." } ] },
+  "Promise of 1528": { official: true, source: "Corebook — unverified", powers: [
+    { id: "promise1528_1", name: "Old Pact", dots: 1, verified: false,
+      description: "Knowledge of, or a claim tied to, a historical Kindred pact dated 1528, relevant when its obligations or signatories resurface." } ] },
+  "Relics of the Veil": { official: true, source: "Corebook — unverified", powers: [
+    { id: "relicsVeil1", name: "Veil Artifact", dots: 1, verified: false,
+      description: "Possession of or access to an object connected to Masquerade secrecy or Second Inquisition activity, valuable to whoever wants it back." } ] },
+  "Road Courier": { official: true, source: "Corebook — unverified", powers: [
+    { id: "roadCourier1", name: "Trusted Runner", dots: 1, verified: false,
+      description: "Reputation as a reliable courier moving messages or goods between domains, granting safe passage or standing invitations along that route." } ] },
+  "Ruins of Carthage": { official: true, source: "Corebook — unverified", powers: [
+    { id: "ruinsCarthage1", name: "Ancient Ties", dots: 1, verified: false,
+      description: "A connection, however indirect, to the destroyed city of Carthage and the ancient Kindred lore associated with its fall." } ] },
+  "Sect War Veteran": { official: true, source: "Corebook — unverified", powers: [
+    { id: "sectWarVeteran1", name: "Battle-Tested", dots: 1, verified: false,
+      description: "Having survived open Camarilla–Sabbat warfare, carrying both hard-won tactical instincts and the notice of those who fought alongside or against them." } ] },
+  "The Trinity": { official: true, source: "Corebook — unverified", powers: [
+    { id: "trinity1", name: "Trinity Lore", dots: 1, verified: false,
+      description: "Knowledge of a significant triad of Kindred figures or forces referred to as the Trinity, and the influence tied to understanding their relationship." } ] },
+  "Veins of the Earth": { official: true, source: "Corebook — unverified", powers: [
+    { id: "veinsEarth1", name: "Tunnel Ways", dots: 1, verified: false,
+      description: "Familiarity with hidden tunnel and underground networks beneath a city, useful for unseen travel or avoiding surface threats." } ] },
+  "The Week of Nightmares": { official: true, source: "Corebook — unverified", powers: [
+    { id: "weekNightmares1", name: "Nightmare Witness", dots: 1, verified: false,
+      description: "Personal experience of or close contact with the mass disappearances and horrors of the Week of Nightmares, a story elders take seriously." } ] },
+};
+function powersForLoresheet(name) {
+  return (LORESHEET_POWERS_CATALOG[name] && LORESHEET_POWERS_CATALOG[name].powers) || [];
+}
+function getSelectedLoresheetNames() {
+  const names = new Set();
+  const perm = document.getElementById('loresheetPermanent');
+  if (perm && perm.value) names.add(perm.value);
+  document.querySelectorAll('#loresheetRows .adv-line').forEach(row => {
+    const v = (row.querySelector('select')?.value || row.querySelector('input')?.value || '').trim();
+    if (v) names.add(v);
+  });
+  return [...names];
+}
+
+// Same cursor-following tooltip component already used for Predator Type
+// and Clan Bane, reused here instead of the browser's native title
+// attribute (which is slow to appear, unstyled, and inconsistent across
+// browsers for <select> elements).
+const _loresheetTip = (() => {
+  const el = document.createElement('div');
+  el.className = 'disc-tooltip clan-tooltip';
+  document.body.appendChild(el);
+
+  function show(name, x, y) {
+    const desc = loresheetDescFor(name);
+    if (!desc) { hide(); return; }
+    el.innerHTML =
+      `<div class="dt-disc-header"><span class="dt-disc">${name}</span></div>` +
+      `<div class="dt-desc">${desc}</div>`;
+    position(x, y); el.classList.add('visible');
+  }
+  function showCustom(name, note, x, y) {
+    if (!note) { show(name, x, y); return; }
+    el.innerHTML =
+      `<div class="dt-disc-header"><span class="dt-disc">${name || '(unnamed)'}</span></div>` +
+      `<div class="dt-desc">${note}</div>`;
+    position(x, y); el.classList.add('visible');
+  }
+  function position(x, y) {
+    const tw = 340;
+    let tx = x + 16; if (tx + tw > window.innerWidth - 4) tx = x - tw - 8;
+    let ty = y - 10; if (ty + 120 > window.innerHeight - 4) ty = window.innerHeight - 124;
+    if (ty < 4) ty = 4;
+    el.style.left = tx + 'px'; el.style.top = ty + 'px';
+  }
+  function move(x, y) { if (el.classList.contains('visible')) position(x, y); }
+  function hide() { el.classList.remove('visible'); }
+  return { show, showCustom, move, hide };
+})();
+function wireLoresheetTooltip(el, row) {
+  el.addEventListener('mouseenter', e => {
+    if (row && row._customNote) { _loresheetTip.showCustom(el.value, row._customNote, e.clientX, e.clientY); return; }
+    _loresheetTip.show(el.value, e.clientX, e.clientY);
+  });
+  el.addEventListener('mousemove',  e => _loresheetTip.move(e.clientX, e.clientY));
+  el.addEventListener('mouseleave', () => _loresheetTip.hide());
+  el.addEventListener('mousedown',  () => _loresheetTip.hide());
+  el.addEventListener('focus',      () => _loresheetTip.hide());
+  el.addEventListener('change',     () => { _loresheetTip.hide(); });
+  el.addEventListener('input',      () => { _loresheetTip.hide(); });
+}
+
+function addLoresheetRow(type, savedValue, savedRating, savedMod, savedModCat, savedNote) {
   // type can be 'select', 'text', or undefined (legacy default to 'select')
   const rowType = type || 'select';
   const container = document.getElementById('loresheetRows');
@@ -4322,25 +4637,25 @@ function addLoresheetRow(type, savedValue, savedRating) {
   const row = document.createElement('div');
   row.className = 'adv-line';
   row.dataset.rowType = rowType;
-  row.style.cssText = 'display:flex;align-items:center;gap:6px;margin-bottom:5px;';
+  row.style.cssText = 'display:flex;align-items:center;gap:4px;flex-wrap:nowrap;position:relative;';
 
   let inputEl;
   if (rowType === 'text') {
     inputEl = document.createElement('input');
     inputEl.type = 'text';
     inputEl.className = 'adv-input';
-    inputEl.placeholder = 'Merit / Flaw...';
+    inputEl.placeholder = 'Loresheet name...';
     inputEl.style.flex = '1';
+    inputEl.style.minWidth = '0';
     if (savedValue) inputEl.value = savedValue;
   } else {
     inputEl = document.createElement('select');
-    inputEl.style.cssText = LS_SELECT_STYLE;
+    inputEl.className = 'adv-input';
+    inputEl.style.cssText = LS_SELECT_STYLE + ';flex:1;min-width:0;';
     inputEl.innerHTML = LORESHEET_OPTIONS;
     if (savedValue) inputEl.value = savedValue;
   }
-
-  const ratingWrap = document.createElement('div');
-  ratingWrap.style.cssText = 'display:flex;align-items:center;gap:6px;flex-shrink:0;';
+  wireLoresheetTooltip(inputEl, row);
 
   const dotWrap = document.createElement('div');
   dotWrap.className = 'adv-rating';
@@ -4359,24 +4674,138 @@ function addLoresheetRow(type, savedValue, savedRating) {
     });
   });
 
-  const removeBtn = document.createElement('span');
-  removeBtn.innerHTML = '×';
-  removeBtn.style.cssText = 'cursor:pointer;color:var(--text-muted);font-size:13px;opacity:0.5;transition:opacity 0.2s;';
-  removeBtn.onmouseover = () => { removeBtn.style.opacity='1'; removeBtn.style.color='var(--crimson)'; };
-  removeBtn.onmouseout  = () => { removeBtn.style.opacity='0.5'; removeBtn.style.color='var(--text-muted)'; };
-  removeBtn.addEventListener('click', () => row.remove());
+  // ── Pool modifier fields (same pattern as Advantages/Drawbacks) ──
+  const modWrap = document.createElement('div');
+  modWrap.className = 'adv-mod-wrap';
+  modWrap.title = 'Pool modifier for dice roller (e.g. +1 Social)';
 
-  ratingWrap.appendChild(dotWrap);
-  ratingWrap.appendChild(removeBtn);
-  row.appendChild(inputEl);
-  row.appendChild(ratingWrap);
-  container.appendChild(row);
-}
-window.addEventListener('DOMContentLoaded', () => {
-  for (let i = 0; i < 3; i++) {
-    addLoresheetRow('text');
+  const modNum = document.createElement('input');
+  modNum.className = 'adv-mod-num';
+  modNum.type = 'text';
+  modNum.placeholder = '±0';
+  modNum.maxLength = 3;
+  if (savedMod !== undefined && savedMod !== 0) modNum.value = (savedMod > 0 ? '+' : '') + savedMod;
+
+  const modCatSel = document.createElement('select');
+  modCatSel.className = 'adv-mod-cat';
+  [['', '—'], ['physical', 'Phys'], ['social', 'Soc'], ['mental', 'Men'], ['any', 'Any']].forEach(([v,l]) => {
+    const o = document.createElement('option');
+    o.value = v; o.textContent = l;
+    if (savedModCat === v) o.selected = true;
+    modCatSel.appendChild(o);
+  });
+  [modNum, modCatSel].forEach(el => el.addEventListener('input', () => markDirty()));
+  [modNum, modCatSel].forEach(el => el.addEventListener('change', () => markDirty()));
+
+  modWrap.appendChild(modNum);
+  modWrap.appendChild(modCatSel);
+
+  // ── Custom description button (same pattern as Advantages/Drawbacks) ──
+  const noteBtn = document.createElement('button');
+  noteBtn.className = 'adv-note-btn';
+  noteBtn.title = 'Add custom description';
+  noteBtn.textContent = '?';
+  noteBtn.type = 'button';
+  if (savedNote) { row._customNote = savedNote; noteBtn.classList.add('has-note'); }
+
+  let notePopup = null, noteArea = null;
+  function openNotePopup() {
+    document.querySelectorAll('.adv-row-note-popup').forEach(p => p.remove());
+    notePopup = document.createElement('div');
+    notePopup.className = 'adv-row-note-popup';
+    const title = document.createElement('div');
+    title.className = 'adv-row-note-popup-title';
+    title.textContent = '✎ Custom Description';
+    noteArea = document.createElement('textarea');
+    noteArea.className = 'adv-row-note-textarea';
+    noteArea.placeholder = 'Describe this loresheet for hover tooltip…';
+    noteArea.value = row._customNote || '';
+    const hint = document.createElement('div');
+    hint.className = 'adv-row-note-hint';
+    hint.textContent = 'Shows on hover. Leave blank to use the built-in description, if one exists for this name.';
+    notePopup.appendChild(title);
+    notePopup.appendChild(noteArea);
+    notePopup.appendChild(hint);
+    document.body.appendChild(notePopup);
+    const br = noteBtn.getBoundingClientRect();
+    let left = br.right + 6;
+    if (left + 268 > window.innerWidth - 4) left = br.left - 268;
+    let top = br.top - 10;
+    if (top + 180 > window.innerHeight - 4) top = window.innerHeight - 184;
+    if (top < 4) top = 4;
+    notePopup.style.left = left + 'px';
+    notePopup.style.top  = top + 'px';
+    noteArea.focus();
+    noteArea.addEventListener('input', () => {
+      row._customNote = noteArea.value.trim();
+      noteBtn.classList.toggle('has-note', !!row._customNote);
+      try { markDirty(); } catch(e){}
+    });
+    setTimeout(() => document.addEventListener('click', closeOnOutside), 10);
   }
-});
+  function closeOnOutside(e) {
+    if (notePopup && !notePopup.contains(e.target) && e.target !== noteBtn) {
+      notePopup.remove(); notePopup = null;
+      document.removeEventListener('click', closeOnOutside);
+    }
+  }
+  noteBtn.addEventListener('click', e => {
+    e.stopPropagation();
+    if (notePopup) { notePopup.remove(); notePopup = null; document.removeEventListener('click', closeOnOutside); }
+    else openNotePopup();
+  });
+
+  const removeBtn = document.createElement('button');
+  removeBtn.innerHTML = '✕';
+  removeBtn.style.cssText = 'background:transparent;border:none;color:var(--text-muted);cursor:pointer;font-size:11px;padding:0 2px;opacity:0.4;transition:opacity 0.2s;flex-shrink:0;';
+  removeBtn.onmouseover = () => { removeBtn.style.opacity='1'; removeBtn.style.color='var(--crimson)'; };
+  removeBtn.onmouseout  = () => { removeBtn.style.opacity='0.4'; removeBtn.style.color='var(--text-muted)'; };
+  removeBtn.addEventListener('click', () => {
+    row.style.opacity='0'; row.style.transition='opacity 0.2s';
+    setTimeout(() => { row.remove(); try { markDirty(); } catch(e){} }, 200);
+  });
+
+  const tray = document.createElement('div');
+  tray.className = 'adv-actions';
+  tray.appendChild(modWrap);
+  tray.appendChild(noteBtn);
+  tray.appendChild(removeBtn);
+
+  row.appendChild(inputEl);
+  row.appendChild(dotWrap);
+  row.appendChild(tray);
+  container.appendChild(row);
+
+  function expandTray() {
+    document.querySelectorAll('.adv-line.active').forEach(r => { if (r !== row) r.classList.remove('active'); });
+    row.classList.add('active');
+  }
+  inputEl.addEventListener('focus', expandTray);
+  inputEl.addEventListener('click', e => { e.stopPropagation(); expandTray(); });
+  document.addEventListener('click', e => {
+    if (!row.contains(e.target) && (!notePopup || !notePopup.contains(e.target))) row.classList.remove('active');
+  }, true);
+}
+// Defaults are added synchronously here (not via DOMContentLoaded) so that,
+// if a saved character exists, applyState()'s loresheet restore logic
+// (which clears #loresheetRows before repopulating it) runs AFTER these and
+// wipes them out — matching how Touchstones/Coterie Tenets seed their
+// defaults. The previous DOMContentLoaded version fired *after* applyState
+// had already restored the real rows, so it kept appending 3 extra blank
+// rows on every single page load, compounding every session.
+for (let i = 0; i < 3; i++) {
+  addLoresheetRow('text');
+}
+
+// The permanent/starting loresheet slot had no tooltip at all previously —
+// LORESHEETS_DATA only covers the shorter list used for the +Preset/+Custom
+// rows below it, so this dropdown's longer option list (Backgrounds plus
+// per-clan entries) will only show a tooltip where the name happens to
+// match an entry in that list; that's expected, not a bug.
+const loresheetPermanentSelect = document.getElementById('loresheetPermanent');
+if (loresheetPermanentSelect) {
+  wireLoresheetTooltip(loresheetPermanentSelect);
+}
 </script>
 
   <!-- COTERIE & BACKGROUND -->
@@ -7111,6 +7540,7 @@ const MERITS_FLAWS_DATA = [
   { name:"Entrepreneur",        type:"merit", cat:"Mental",       level:2, mod:1,  modCat:"mental",    clan:"", desc:["Add one die to Finance rolls and rolls related to managing, growing, or leveraging Resources","You have a natural intuition for commerce, investment strategy, and recognising opportunity before others","Sustained successful ventures can improve your Resources background over time"] },
   { name:"Protege",             type:"merit", cat:"Mental",       level:2, mod:0,  modCat:"",          clan:"", desc:["A mortal or thin-blood is under your direct mentorship — they learn rapidly and are intensely loyal to you","They grow as a character across the chronicle; think of them as a significant recurring NPC with their own arc","Their choices and safety can become vulnerabilities — enemies will target them to reach you"] },
   { name:"Animal Affinity",     type:"merit", cat:"Supernatural", level:1, mod:1,  modCat:"physical",  clan:"Gangrel", desc:["Choose a specific animal type at creation — wolves, rats, ravens, cats, horses, serpents, etc.","Add one die to all rolls interacting with that animal type; they will not attack you without extreme provocation","Animals of your type may follow you instinctively, warn you of approaching danger, or gather when you call"] },
+  { name:"Sanctuary",           type:"merit", cat:"Supernatural", level:2, mod:0,  modCat:"",          clan:"Nosferatu", desc:["PLACEHOLDER — added because it's unlocked by the Descendant of Zelios loresheet, but its exact level/cost and effect text haven't been verified against a sourcebook here.","Likely represents a haven that is unusually difficult for others to locate, enter, or threaten.","Edit this entry (or the level dots once added to your sheet) to match your book's actual text before relying on it at the table."] },
   { name:"Extra Limb",          type:"merit", cat:"Supernatural", level:3, mod:0,  modCat:"",          clan:"Tzimisce", desc:["Through Vicissitude you have grown an additional functional limb — arm, tentacle, tail, or other appendage","It acts on your turn: holds items, attacks independently, or performs fine tasks without occupying your main actions","Carries potential social penalties depending on concealment; the limb is permanent and cannot be regrown if severed"] },
   { name:"Unbowed",             type:"merit", cat:"Supernatural", level:4, mod:0,  modCat:"",          clan:"", desc:["You ignore the first Stun result each scene — shrug off the blow and continue acting","Your resilience is beyond the Kindred norm; you are extremely difficult to incapacitate even in direct combat","Stacking with Fortitude makes you genuinely terrifying to face in sustained combat"] },
   { name:"Ugly",                type:"flaw",  cat:"Physical",     level:1, mod:-1, modCat:"social",    clan:"", desc:["Subtract one die from Social rolls where your appearance is visible and relevant — first impressions, seduction, performance","Mortals find you instinctively unpleasant or deeply unsettling to look upon","Has no effect on Social rolls conducted by voice, phone, letter, or other means where your face is not seen"] },
@@ -7455,6 +7885,197 @@ window._advTip = _advTip; // expose globally for dice roller chips
     try { _advTip.attach(row); } catch(e){}
   }
 
+  // ── Loresheet Powers ── independent, removable, reorderable rows added
+  // only via explicit user action ("+ Preset" or "+ Custom"), never
+  // auto-generated from selecting a loresheet. Structurally a close mirror
+  // of makeAdvRow (same tray, same drag-to-reorder) so it behaves exactly
+  // like Advantages/Drawbacks, per the loresheet-power spec.
+  const loresheetPowerRowsEl = () => document.getElementById('loresheetPowerRows');
+  function makeLoresheetPowerRow(data) {
+    const parent = loresheetPowerRowsEl();
+    if (!parent) { console.warn('makeLoresheetPowerRow: #loresheetPowerRows not found'); return; }
+    const row = document.createElement('div');
+    row.className = 'adv-line';
+    row.style.cssText = 'display:flex;align-items:center;gap:4px;flex-wrap:nowrap;position:relative;';
+
+    const inp = document.createElement('input');
+    inp.className = 'adv-input';
+    inp.placeholder = 'Loresheet power...';
+    inp.style.flex = '1';
+    inp.style.minWidth = '0';
+    inp.style.width = '0';
+    if (data?.name) inp.value = data.name;
+
+    const rating = document.createElement('div');
+    rating.className = 'adv-rating';
+    const dots = [];
+    for (let i = 1; i <= 5; i++) {
+      const d = document.createElement('div');
+      d.className = 'adv-dot lore-dot';
+      if (data?.level && i <= data.level) d.classList.add('filled');
+      d.addEventListener('click', () => {
+        const cur = dots.filter(x => x.classList.contains('filled')).length;
+        const next = cur === i ? i - 1 : i;
+        dots.forEach((x, idx) => x.classList.toggle('filled', idx < next));
+        try { markDirty(); } catch(e) {}
+      });
+      rating.appendChild(d);
+      dots.push(d);
+    }
+
+    const modWrap = document.createElement('div');
+    modWrap.className = 'adv-mod-wrap';
+    modWrap.title = 'Pool modifier for dice roller (e.g. +1 Social)';
+    const modNum = document.createElement('input');
+    modNum.className = 'adv-mod-num';
+    modNum.type = 'text';
+    modNum.placeholder = '±0';
+    modNum.maxLength = 3;
+    if (data?.mod !== undefined && data.mod !== 0) modNum.value = (data.mod > 0 ? '+' : '') + data.mod;
+    const modCat = document.createElement('select');
+    modCat.className = 'adv-mod-cat';
+    [['', '—'], ['physical', 'Phys'], ['social', 'Soc'], ['mental', 'Men'], ['any', 'Any']].forEach(([v,l]) => {
+      const o = document.createElement('option');
+      o.value = v; o.textContent = l;
+      if (data?.modCat === v) o.selected = true;
+      modCat.appendChild(o);
+    });
+    modWrap.appendChild(modNum);
+    modWrap.appendChild(modCat);
+    [modNum, modCat].forEach(el => el.addEventListener('input',  () => { try { markDirty(); } catch(e){} }));
+    [modNum, modCat].forEach(el => el.addEventListener('change', () => { try { markDirty(); } catch(e){} }));
+
+    const removeBtn = document.createElement('button');
+    removeBtn.innerHTML = '✕';
+    removeBtn.style.cssText = 'background:transparent;border:none;color:var(--text-muted);cursor:pointer;font-size:11px;padding:0 2px;opacity:0.4;transition:opacity 0.2s;flex-shrink:0;';
+    removeBtn.onmouseover = () => { removeBtn.style.opacity='1'; removeBtn.style.color='var(--crimson)'; };
+    removeBtn.onmouseout  = () => { removeBtn.style.opacity='0.4'; removeBtn.style.color='var(--text-muted)'; };
+    removeBtn.addEventListener('click', () => {
+      row.style.opacity='0'; row.style.transition='opacity 0.2s';
+      setTimeout(() => { row.remove(); try { markDirty(); } catch(e){} }, 200);
+    });
+
+    const noteBtn = document.createElement('button');
+    noteBtn.className = 'adv-note-btn';
+    noteBtn.title = 'Add custom description';
+    noteBtn.textContent = '?';
+    noteBtn.type = 'button';
+    if (data?.note) noteBtn.classList.add('has-note');
+    let notePopup = null, noteArea = null;
+    function openNotePopup() {
+      document.querySelectorAll('.adv-row-note-popup').forEach(p => p.remove());
+      notePopup = document.createElement('div');
+      notePopup.className = 'adv-row-note-popup';
+      const title = document.createElement('div');
+      title.className = 'adv-row-note-popup-title';
+      title.textContent = '✎ Custom Description';
+      noteArea = document.createElement('textarea');
+      noteArea.className = 'adv-row-note-textarea';
+      noteArea.placeholder = 'Describe this power for hover tooltip…';
+      noteArea.value = row._customNote || '';
+      const hint = document.createElement('div');
+      hint.className = 'adv-row-note-hint';
+      hint.textContent = 'Shows on hover. Leave blank to use the preset description, if one exists.';
+      notePopup.appendChild(title); notePopup.appendChild(noteArea); notePopup.appendChild(hint);
+      document.body.appendChild(notePopup);
+      const br = noteBtn.getBoundingClientRect();
+      let left = br.right + 6;
+      if (left + 268 > window.innerWidth - 4) left = br.left - 268;
+      let top = br.top - 10;
+      if (top + 180 > window.innerHeight - 4) top = window.innerHeight - 184;
+      if (top < 4) top = 4;
+      notePopup.style.left = left + 'px'; notePopup.style.top = top + 'px';
+      noteArea.focus();
+      noteArea.addEventListener('input', () => {
+        row._customNote = noteArea.value.trim();
+        noteBtn.classList.toggle('has-note', !!row._customNote);
+        try { markDirty(); } catch(e){}
+      });
+      setTimeout(() => document.addEventListener('click', closeOnOutside), 10);
+    }
+    function closeOnOutside(e) {
+      if (notePopup && !notePopup.contains(e.target) && e.target !== noteBtn) {
+        notePopup.remove(); notePopup = null;
+        document.removeEventListener('click', closeOnOutside);
+      }
+    }
+    noteBtn.addEventListener('click', e => {
+      e.stopPropagation();
+      if (notePopup) { notePopup.remove(); notePopup = null; document.removeEventListener('click', closeOnOutside); }
+      else openNotePopup();
+    });
+    if (data?.note) row._customNote = data.note;
+
+    const dragHandle = document.createElement('span');
+    dragHandle.className = 'adv-drag-handle';
+    dragHandle.textContent = '⠿';
+    dragHandle.title = 'Drag to reorder';
+
+    const tray = document.createElement('div');
+    tray.className = 'adv-actions';
+    tray.appendChild(modWrap);
+    tray.appendChild(noteBtn);
+    tray.appendChild(removeBtn);
+
+    row.appendChild(dragHandle);
+    row.appendChild(inp);
+    row.appendChild(rating);
+    row.appendChild(tray);
+    parent.appendChild(row);
+
+    function expandTray() {
+      document.querySelectorAll('.adv-line.active').forEach(r => { if (r !== row) r.classList.remove('active'); });
+      row.classList.add('active');
+    }
+    inp.addEventListener('focus', expandTray);
+    inp.addEventListener('click', e => { e.stopPropagation(); expandTray(); });
+    document.addEventListener('click', e => {
+      if (!row.contains(e.target) && (!notePopup || !notePopup.contains(e.target))) row.classList.remove('active');
+    }, true);
+
+    // ── Drag to reorder — identical pattern to Advantages/Drawbacks ──
+    row.setAttribute('draggable', 'false');
+    dragHandle.addEventListener('mousedown', () => row.setAttribute('draggable', 'true'));
+    dragHandle.addEventListener('mouseup',   () => row.setAttribute('draggable', 'false'));
+    row.addEventListener('dragstart', e => {
+      e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('text/plain', '');
+      setTimeout(() => row.classList.add('dragging'), 0);
+    });
+    row.addEventListener('dragend', () => {
+      row.classList.remove('dragging');
+      row.setAttribute('draggable', 'false');
+      parent.querySelectorAll('.adv-line').forEach(r => r.classList.remove('drag-over'));
+      try { markDirty(); } catch(e) {}
+    });
+    row.addEventListener('dragover', e => {
+      e.preventDefault();
+      const dragging = parent.querySelector('.adv-line.dragging');
+      if (!dragging || dragging === row) return;
+      parent.querySelectorAll('.adv-line').forEach(r => r.classList.remove('drag-over'));
+      row.classList.add('drag-over');
+      const rect = row.getBoundingClientRect();
+      if (e.clientY < rect.top + rect.height / 2) parent.insertBefore(dragging, row);
+      else parent.insertBefore(dragging, row.nextSibling);
+    });
+    row.addEventListener('dragleave', () => row.classList.remove('drag-over'));
+    row.addEventListener('drop', e => { e.preventDefault(); row.classList.remove('drag-over'); });
+
+    // Hover tooltip: custom note takes priority, else look up the catalog description by name
+    row.addEventListener('mouseenter', e => {
+      const name = inp.value.trim();
+      if (!name) return;
+      if (row._customNote) { _loresheetTip.showCustom(name, row._customNote, e.clientX, e.clientY); return; }
+      for (const loresheetName in LORESHEET_POWERS_CATALOG) {
+        const p = powersForLoresheet(loresheetName).find(x => x.name === name);
+        if (p) { _loresheetTip.showCustom(name, p.description, e.clientX, e.clientY); return; }
+      }
+    });
+    row.addEventListener('mousemove', e => _loresheetTip.move(e.clientX, e.clientY));
+    row.addEventListener('mouseleave', () => _loresheetTip.hide());
+  }
+  window.makeLoresheetPowerRow = makeLoresheetPowerRow;
+
   // addAdvRow/addFlawRow now call makeAdvRow directly via inline onclick
 
   // Global modal opener — used by add buttons
@@ -7521,7 +8142,7 @@ window._advTip = _advTip; // expose globally for dice roller chips
     // Set title and type
     const t = _presetModalTarget.type;
     const titleEl = document.getElementById('adv-preset-shared-title');
-    if (titleEl) titleEl.textContent = t === 'flaw' ? '⚔ Flaws & Banes' : '✦ Merits & Advantages';
+    if (titleEl) titleEl.textContent = t === 'flaw' ? '⚔ Flaws & Banes' : t === 'loresheet' ? '📜 Loresheets' : t === 'loresheetPower' ? '✦ Loresheet Powers' : '✦ Merits & Advantages';
 
     // Reset search
     const searchEl = document.getElementById('adv-preset-shared-search');
@@ -7539,6 +8160,8 @@ window._advTip = _advTip; // expose globally for dice roller chips
   function populateSharedModal() {
     if (!_presetModalTarget) return;
     const type     = _presetModalTarget.type;
+    const isLore   = type === 'loresheet';
+    const isPower  = type === 'loresheetPower';
     const listEl   = document.getElementById('adv-preset-shared-list');
     const detailEl = document.getElementById('adv-preset-shared-detail');
     const searchEl = document.getElementById('adv-preset-shared-search');
@@ -7547,12 +8170,41 @@ window._advTip = _advTip; // expose globally for dice roller chips
 
     listEl.innerHTML = '';
 
-    const filtered = MERITS_FLAWS_DATA.filter(d => {
-      const dataType = type === 'adv' ? 'merit' : 'flaw';
-      if (d.type !== dataType) return false;
-      if (q && !d.name.toLowerCase().includes(q) && !d.cat.toLowerCase().includes(q) && !d.clan.toLowerCase().includes(q)) return false;
-      return true;
-    });
+    let filtered;
+    if (isPower) {
+      // Only powers belonging to whichever loresheet(s) are currently
+      // selected — selecting a loresheet only changes what's *available*
+      // here, it never adds anything on its own.
+      const selected = getSelectedLoresheetNames();
+      filtered = [];
+      selected.forEach(loresheetName => {
+        powersForLoresheet(loresheetName).forEach(p => {
+          filtered.push({ name: p.name, cat: loresheetName, clan: '', level: p.dots, mod: 0, modCat: '', desc: [p.description], verified: p.verified });
+        });
+      });
+      if (q) filtered = filtered.filter(d => d.name.toLowerCase().includes(q) || d.cat.toLowerCase().includes(q));
+    } else {
+      const sourceData = isLore ? LORESHEETS_DATA : MERITS_FLAWS_DATA;
+      filtered = sourceData.filter(d => {
+        if (!isLore) {
+          const dataType = type === 'adv' ? 'merit' : 'flaw';
+          if (d.type !== dataType) return false;
+        }
+        if (q && !d.name.toLowerCase().includes(q) && !d.cat.toLowerCase().includes(q) && !(d.clan||'').toLowerCase().includes(q)) return false;
+        return true;
+      });
+    }
+
+    if (isPower && filtered.length === 0) {
+      const empty = document.createElement('div');
+      empty.style.cssText = 'padding:18px;text-align:center;font-family:"EB Garamond",serif;font-size:13px;color:var(--text-muted);font-style:italic;';
+      empty.textContent = getSelectedLoresheetNames().length
+        ? 'No known preset powers for your current loresheet(s) yet — add one with + Custom instead, or check back once more are catalogued.'
+        : 'Select a loresheet above first — this list only shows powers for loresheets you actually have.';
+      listEl.appendChild(empty);
+      detailEl.innerHTML = '<div class="adv-detail-empty">Nothing to show yet</div>';
+      return;
+    }
 
     const groups = {};
     filtered.forEach(d => { (groups[d.cat] = groups[d.cat]||[]).push(d); });
@@ -7567,13 +8219,17 @@ window._advTip = _advTip; // expose globally for dice roller chips
         item.className = 'adv-preset-item';
         const nameEl = document.createElement('span');
         nameEl.className = 'adv-preset-name'; nameEl.textContent = d.name;
-        const lvlEl = document.createElement('span');
-        lvlEl.className = 'adv-preset-lvl';
-        lvlEl.textContent = '●'.repeat(d.level) + '○'.repeat(Math.max(0,5-d.level));
+        item.appendChild(nameEl);
+        if (!isLore) {
+          const lvlEl = document.createElement('span');
+          lvlEl.className = 'adv-preset-lvl';
+          lvlEl.textContent = '●'.repeat(d.level) + '○'.repeat(Math.max(0,5-d.level));
+          item.appendChild(lvlEl);
+        }
         const clanEl = document.createElement('span');
         clanEl.className = 'adv-preset-clan';
         if (d.clan) clanEl.textContent = d.clan;
-        item.appendChild(nameEl); item.appendChild(lvlEl); item.appendChild(clanEl);
+        item.appendChild(clanEl);
 
         item.addEventListener('click', () => {
           listEl.querySelectorAll('.adv-preset-item').forEach(i => i.classList.remove('selected'));
@@ -7582,9 +8238,11 @@ window._advTip = _advTip; // expose globally for dice roller chips
           detailEl.innerHTML = '';
           const dn = document.createElement('div'); dn.className='adv-detail-name'; dn.textContent=d.name;
           const dm = document.createElement('div'); dm.className='adv-detail-meta';
-          dm.innerHTML=`<span>${d.cat}</span><span>${'●'.repeat(d.level)}${'○'.repeat(Math.max(0,5-d.level))}</span>`+(d.clan?`<span style="color:var(--crimson);font-style:italic">${d.clan}</span>`:'');
+          dm.innerHTML = isLore
+            ? `<span>${d.cat}</span>`+(d.clan?`<span style="color:var(--crimson);font-style:italic">${d.clan}</span>`:'')
+            : `<span>${d.cat}</span><span>${'●'.repeat(d.level)}${'○'.repeat(Math.max(0,5-d.level))}</span>`+(d.clan?`<span style="color:var(--crimson);font-style:italic">${d.clan}</span>`:'');
           detailEl.appendChild(dn); detailEl.appendChild(dm);
-          if (d.mod !== 0) {
+          if (!isLore && !isPower && d.mod !== 0) {
             const modEl = document.createElement('div');
             modEl.className='adv-detail-mod '+(d.mod>0?'pos':'neg');
             modEl.textContent=(d.mod>0?'+':'')+d.mod+' die'+(Math.abs(d.mod)!==1?'s':'')+' to '+(d.modCat||'all')+' pools';
@@ -7593,16 +8251,35 @@ window._advTip = _advTip; // expose globally for dice roller chips
           const ul=document.createElement('ul'); ul.className='adv-detail-desc';
           d.desc.forEach(line=>{const li=document.createElement('li');li.textContent=line;ul.appendChild(li);});
           detailEl.appendChild(ul);
+          if (isLore) {
+            const noteEl = document.createElement('div');
+            noteEl.style.cssText = 'font-family:"EB Garamond",serif;font-size:11px;font-style:italic;color:var(--text-muted);margin-top:4px;';
+            noteEl.textContent = 'Original flavor summary, not official rules text — edit it on the sheet once added.';
+            detailEl.appendChild(noteEl);
+          }
+          if (isPower && d.verified === false) {
+            const noteEl = document.createElement('div');
+            noteEl.style.cssText = 'font-family:"Cinzel",serif;font-size:10px;letter-spacing:0.05em;text-transform:uppercase;color:var(--blood);margin-top:4px;';
+            noteEl.textContent = '\u26A0 Unverified — confirm dots/effect against your sourcebook before use.';
+            detailEl.appendChild(noteEl);
+          }
           const selBtn=document.createElement('button'); selBtn.className='adv-detail-select-btn';
           selBtn.textContent='✦ Add '+d.name;
           selBtn.addEventListener('click', () => {
-            // Create a new row pre-filled with this preset
-            const parent = type==='flaw'?flawRowsEl:advRowsEl;
-            makeAdvRow(type, { name:d.name, level:d.level, mod:d.mod, modCat:d.modCat });
+            if (isLore) {
+              addLoresheetRow('text', d.name, 1);
+              try { markDirty(); } catch(e){}
+            } else if (isPower) {
+              makeLoresheetPowerRow({ name: d.name, level: d.level, mod: 0, modCat: '' });
+              try { markDirty(); } catch(e){}
+            } else {
+              // Create a new row pre-filled with this preset
+              makeAdvRow(type, { name:d.name, level:d.level, mod:d.mod, modCat:d.modCat });
+              try { syncModState(); } catch(e) {}  // immediate sync to popout
+              try { if (window.buildCommonTests) window.buildCommonTests(); } catch(e){}
+              try { markDirty(); } catch(e){}
+            }
             document.getElementById('adv-preset-shared-overlay').classList.remove('open');
-            try { syncModState(); } catch(e) {}  // immediate sync to popout
-            try { if (window.buildCommonTests) window.buildCommonTests(); } catch(e){}
-            try { markDirty(); } catch(e){}
           });
           detailEl.appendChild(selBtn);
         });
@@ -9859,13 +10536,35 @@ window._advTip = _advTip; // expose globally for dice roller chips
     // ── Loresheets ──
     try {
       const lsEl = document.getElementById('loresheetRows');
-      state.loresheets = lsEl ? [...lsEl.querySelectorAll('.adv-line')].map(row=>({
-        type:  row.dataset.rowType||'text',
-        value: row.querySelector('select')?.value||row.querySelector('input')?.value||'',
-        level: [...row.querySelectorAll('.adv-dot')].filter(d=>d.classList.contains('filled')).length
-      })) : [];
+      state.loresheets = lsEl ? [...lsEl.querySelectorAll('.adv-line')].map(row=>{
+        const modRaw = row.querySelector('.adv-mod-num')?.value?.trim();
+        const mod = parseInt(modRaw);
+        return {
+          type:   row.dataset.rowType||'text',
+          value:  row.querySelector('select')?.value||row.querySelector('input')?.value||'',
+          level:  [...row.querySelectorAll('.adv-dot')].filter(d=>d.classList.contains('filled')).length,
+          mod:    isNaN(mod) ? 0 : mod,
+          modCat: row.querySelector('.adv-mod-cat')?.value || '',
+          note:   row._customNote || '',
+        };
+      }) : [];
       state.loresheetPermanent = document.getElementById('loresheetPermanent')?.value||'';
     } catch(e) { state.loresheets=[]; }
+    // ── Loresheet Powers (independent, removable, reorderable rows) ──
+    try {
+      const lprEl = document.getElementById('loresheetPowerRows');
+      state.loresheetPowers = lprEl ? [...lprEl.querySelectorAll('.adv-line')].map(row => {
+        const modRaw = row.querySelector('.adv-mod-num')?.value?.trim() || '';
+        const mod = modRaw ? parseInt(modRaw) : 0;
+        return {
+          name:   row.querySelector('.adv-input')?.value || '',
+          level:  [...row.querySelectorAll('.adv-dot')].filter(d=>d.classList.contains('filled')).length,
+          mod:    isNaN(mod) ? 0 : mod,
+          modCat: row.querySelector('.adv-mod-cat')?.value || '',
+          note:   row._customNote || '',
+        };
+      }) : [];
+    } catch(e) { state.loresheetPowers = []; }
     // ── Anatomy / Limb Status ──
     try {
       state.anatomy = { parts: anatState, expanded: [...anatExpanded], viewMode: anatViewMode, side: anatViewSide };
@@ -9935,11 +10634,30 @@ window._advTip = _advTip; // expose globally for dice roller chips
     try {
       if (state.loresheets) {
         const lsEl = document.getElementById('loresheetRows');
-        if (lsEl) { lsEl.innerHTML=''; state.loresheets.forEach(ls=>addLoresheetRow(ls.type||'text',ls.value||'',ls.level||0)); }
+        if (lsEl) { lsEl.innerHTML=''; state.loresheets.forEach(ls=>addLoresheetRow(ls.type||'text',ls.value||'',ls.level||0,ls.mod||0,ls.modCat||'',ls.note||'')); }
       }
       if (state.loresheetPermanent!==undefined) {
         const lsPerm = document.getElementById('loresheetPermanent');
         if (lsPerm) lsPerm.value = state.loresheetPermanent;
+      }
+    } catch(e) {}
+    // ── Loresheet Powers ──
+    try {
+      const lprEl = document.getElementById('loresheetPowerRows');
+      if (lprEl) {
+        lprEl.innerHTML = '';
+        let powers = Array.isArray(state.loresheetPowers) ? state.loresheetPowers : null;
+        // One-time migration: an earlier version auto-rendered unlocked
+        // powers as dot-only ratings (state.loresheetUnlockRatings) with no
+        // way to remove them. If that's all an older save has, carry those
+        // ratings forward as real, independent, removable power rows
+        // instead of silently losing what the player had set.
+        if (!powers && state.loresheetUnlockRatings && typeof state.loresheetUnlockRatings === 'object') {
+          powers = Object.entries(state.loresheetUnlockRatings)
+            .filter(([, level]) => level > 0)
+            .map(([name, level]) => ({ name, level, mod: 0, modCat: '', note: '' }));
+        }
+        (powers || []).forEach(p => makeLoresheetPowerRow(p));
       }
     } catch(e) {}
     // ── Anatomy / Limb Status ──
@@ -10620,6 +11338,8 @@ window._advTip = _advTip; // expose globally for dice roller chips
       if (lsEl) { lsEl.innerHTML=''; for (let i=0;i<3;i++) addLoresheetRow('text','',0); }
       const lsPerm = document.getElementById('loresheetPermanent');
       if (lsPerm) lsPerm.selectedIndex = 0;
+      const lprEl = document.getElementById('loresheetPowerRows');
+      if (lprEl) lprEl.innerHTML = '';
 
       anatState = {}; anatExpanded = new Set(); renderAnatomyTree();
 
